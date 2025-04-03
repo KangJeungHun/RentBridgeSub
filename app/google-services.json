@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "240171466327",
+    "project_id": "rentbridgesub",
+    "storage_bucket": "rentbridgesub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240171466327:android:c398a7f9ab065acc1d2d12",
+        "android_client_info": {
+          "package_name": "com.example.rentbridgesub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3AIFm1qqOwM_l-G_UYD9U2YQgjiv6lKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
