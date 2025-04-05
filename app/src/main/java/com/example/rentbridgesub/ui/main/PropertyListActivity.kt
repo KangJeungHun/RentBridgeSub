@@ -21,7 +21,6 @@ class PropertyListActivity : AppCompatActivity() {
         binding = ActivityPropertyListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 어댑터 초기화 (클릭 이벤트 포함)
         adapter = PropertyAdapter(propertyList) { property ->
             val intent = Intent(this, PropertyDetailActivity::class.java)
             intent.putExtra("property", property)

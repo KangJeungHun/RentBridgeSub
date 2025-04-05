@@ -5,32 +5,15 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
-    <ImageView
-        android:id="@+id/ivThumbnail"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:scaleType="centerCrop"
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="매물 제목"
+        android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <TextView
-        android:id="@+id/tvAddress"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="주소"
-        android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@id/ivThumbnail"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
-        android:id="@+id/tvPeriod"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="기간"
-        app:layout_constraintStart_toEndOf="@id/ivThumbnail"
-        app:layout_constraintTop_toBottomOf="@id/tvAddress"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
@@ -38,8 +21,30 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="가격"
-        app:layout_constraintStart_toEndOf="@id/ivThumbnail"
-        app:layout_constraintTop_toBottomOf="@id/tvPeriod"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="매물 설명"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvPrice"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/btnChat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="채팅하기"
+        app:layout_constraintTop_toBottomOf="@id/tvDescription"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

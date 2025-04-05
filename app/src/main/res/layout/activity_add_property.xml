@@ -16,13 +16,34 @@
         android:src="@mipmap/ic_launcher" />
 
     <EditText
-        android:id="@+id/etAddress"
-        android:hint="주소"
+        android:id="@+id/etTitle"
+        android:hint="매물 제목"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/ivProperty"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etDescription"
+        android:hint="매물 설명"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/etTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etAddress"
+        android:hint="주소"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/etDescription"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <EditText
         android:id="@+id/etPrice"
@@ -32,7 +53,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/etAddress"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <EditText
         android:id="@+id/etStartDate"
@@ -41,7 +63,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/etPrice"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <EditText
         android:id="@+id/etEndDate"
@@ -50,7 +73,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/etStartDate"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/btnRegister"

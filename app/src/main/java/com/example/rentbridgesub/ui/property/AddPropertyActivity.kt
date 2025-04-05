@@ -12,7 +12,7 @@ import com.example.rentbridgesub.databinding.ActivityAddPropertyBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import java.util.UUID
+import java.util.*
 
 class AddPropertyActivity : AppCompatActivity() {
 
@@ -37,20 +37,19 @@ class AddPropertyActivity : AppCompatActivity() {
         }
 
         binding.btnRegister.setOnClickListener {
-            val address = binding.etAddress.text.toString()
+            val title = binding.etAddress.text.toString()
             val price = binding.etPrice.text.toString()
-            val startDate = binding.etStartDate.text.toString()
-            val endDate = binding.etEndDate.text.toString()
+            val description = "${binding.etStartDate.text} ~ ${binding.etEndDate.text}"
 
-            if (address.isNotEmpty() && startDate.isNotEmpty() && endDate.isNotEmpty()) {
-                uploadProperty(address, price, startDate, endDate)
+            if (title.isNotEmpty() && price.isNotEmpty() && description.isNotEmpty()) {
+                uploadProperty(title, price, description)
             } else {
-                Toast.makeText(this, "주소와 계약 기간을 입력하세요", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "모든 정보를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun uploadProperty(address: String, price: String, startDate: String, endDate: String) {
+    private fun uploadProperty(title: String, price: String, description: String) {
         val propertyId = UUID.randomUUID().toString()
 
         if (selectedImageUri != null) {
@@ -58,35 +57,34 @@ class AddPropertyActivity : AppCompatActivity() {
             storageRef.putFile(selectedImageUri!!)
                 .addOnSuccessListener {
                     storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        saveProperty(propertyId, address, price, startDate, endDate, uri.toString())
+                        saveProperty(propertyId, title, price, description, uri.toString())
                     }
                 }
                 .addOnFailureListener {
-                    Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "이미지 업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
         } else {
-            // 사진 없이 등록
-            saveProperty(propertyId, address, price, startDate, endDate, "")
+            // 이미지를 선택하지 않은 경우
+            saveProperty(propertyId, title, price, description, "")
         }
     }
 
     private fun saveProperty(
         propertyId: String,
-        address: String,
+        title: String,
         price: String,
-        startDate: String,
-        endDate: String,
+        description: String,
         imageUrl: String
     ) {
         val property = Property(
-            propertyId = propertyId,
-            ownerId = auth.currentUser?.uid ?: "",
-            address = address,
+            id = propertyId,
+            title = title,
             price = price,
-            startDate = startDate,
-            endDate = endDate,
+            description = description,
+            ownerId = auth.currentUser?.uid ?: "",
             imageUrl = imageUrl
         )
+
         db.collection("Properties").document(propertyId).set(property)
             .addOnSuccessListener {
                 Toast.makeText(this, "매물 등록 완료", Toast.LENGTH_SHORT).show()

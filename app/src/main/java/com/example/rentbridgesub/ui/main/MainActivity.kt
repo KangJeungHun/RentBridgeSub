@@ -2,9 +2,10 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.databinding.ActivityMainBinding
+import com.example.rentbridgesub.ui.auth.LoginActivity
+import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,49 +13,50 @@ import com.google.firebase.firestore.FirebaseFirestore
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var auth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+    private var userType: String = ""
+    private var userName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
-
-        val uid = auth.currentUser?.uid ?: return
-
-        db.collection("Users").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val userType = document.getString("userType")
-                    binding.tvWelcome.text = "환영합니다! $userType"
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } else {
+            db.collection("Users").document(uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    userType = document.getString("userType") ?: ""
+                    userName = document.getString("name") ?: ""
+                    binding.tvWelcome.text = "환영합니다! $userName"
 
                     if (userType == "sublessor") {
-                        // 전대인 → 전체 매물 보기 버튼 숨기기
-                        binding.btnPropertyList.visibility = View.GONE
-                    } else if (userType == "sublessee") {
-                        // 전차인 → 매물 등록 버튼만 숨기기, 마이페이지는 그대로
-                        binding.btnAddProperty.visibility = View.GONE
+                        binding.btnAddProperty.visibility = android.view.View.VISIBLE
+                        binding.btnViewProperties.visibility = android.view.View.GONE
+                    } else {
+                        binding.btnAddProperty.visibility = android.view.View.GONE
+                        binding.btnViewProperties.visibility = android.view.View.VISIBLE
                     }
-                } else {
-                    binding.tvWelcome.text = "유저 정보 없음"
                 }
-            }
-            .addOnFailureListener {
-                binding.tvWelcome.text = "유저 정보 불러오기 실패"
-            }
+                .addOnFailureListener {
+                    binding.tvWelcome.text = "유저 정보 불러오기 실패"
+                }
+        }
 
         binding.btnAddProperty.setOnClickListener {
-            startActivity(Intent(this, AddPropertyActivity::class.java))
+            startActivity(Intent(this, AddPropertyActivity::class.java)) // 🔥 수정 완료
         }
 
         binding.btnMyPage.setOnClickListener {
             startActivity(Intent(this, MyPageActivity::class.java))
         }
 
-        binding.btnPropertyList.setOnClickListener {
+        binding.btnViewProperties.setOnClickListener {
             startActivity(Intent(this, PropertyListActivity::class.java))
         }
     }
