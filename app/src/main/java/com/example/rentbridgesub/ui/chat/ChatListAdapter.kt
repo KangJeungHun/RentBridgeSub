@@ -1,12 +1,13 @@
 package com.example.rentbridgesub.ui.chat
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rentbridgesub.databinding.ItemChatListBinding
 
 class ChatListAdapter(
-    private val users: List<Pair<String, String>>, // (userId, userName)
+    private val chatRooms: List<Pair<String, String>>,
     private val onItemClick: (String) -> Unit
 ) : RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder>() {
 
@@ -14,7 +15,7 @@ class ChatListAdapter(
         RecyclerView.ViewHolder(binding.root) {
         init {
             binding.root.setOnClickListener {
-                onItemClick(users[adapterPosition].first)
+                onItemClick(chatRooms[adapterPosition].first) // 👈 여기
             }
         }
     }
@@ -25,8 +26,8 @@ class ChatListAdapter(
     }
 
     override fun onBindViewHolder(holder: ChatListViewHolder, position: Int) {
-        holder.binding.tvUserId.text = users[position].second // 이름 표시
+        holder.binding.tvUserId.text = chatRooms[position].second // 👈 상대방 이름 보여주기
     }
 
-    override fun getItemCount(): Int = users.size
+    override fun getItemCount(): Int = chatRooms.size
 }

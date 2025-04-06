@@ -33,7 +33,6 @@ class MyPageActivity : AppCompatActivity() {
         binding.recyclerViewMyProperties.layoutManager = LinearLayoutManager(this)
         binding.recyclerViewMyProperties.adapter = adapter
 
-        // ⭐️ 채팅 목록 버튼 클릭 처리
         binding.btnChatList.setOnClickListener {
             startActivity(Intent(this, ChatListActivity::class.java))
         }

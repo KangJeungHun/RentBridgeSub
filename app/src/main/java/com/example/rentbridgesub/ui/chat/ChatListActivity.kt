@@ -13,7 +13,7 @@ class ChatListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatListBinding
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private val chatUserList = mutableListOf<Pair<String, String>>() // (userId, userName)
+    private val chatUserList = mutableListOf<Pair<String, String>>() // (상대방UID, 이름)
     private lateinit var adapter: ChatListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,48 +39,45 @@ class ChatListActivity : AppCompatActivity() {
         db.collection("ChatRooms")
             .get()
             .addOnSuccessListener { snapshot ->
-                val userIds = mutableSetOf<String>()
+                println("불러온 ChatRooms document 개수: ${snapshot.documents.size}")
+
+                val otherUserIds = mutableSetOf<String>()
 
                 for (doc in snapshot.documents) {
                     val roomId = doc.id
                     val ids = roomId.split("-")
-                    if (ids.contains(currentUserId)) {
-                        val otherUserId = ids.first { it != currentUserId }
-                        userIds.add(otherUserId)
+                    if (ids.size == 2) {
+                        val (id1, id2) = ids
+                        if (id1 == currentUserId) {
+                            otherUserIds.add(id2)
+                        } else if (id2 == currentUserId) {
+                            otherUserIds.add(id1)
+                        }
                     }
                 }
 
-                if (userIds.isEmpty()) {
+                println("찾은 상대방 UID 개수: ${otherUserIds.size}")
+
+                if (otherUserIds.isEmpty()) {
                     chatUserList.clear()
                     adapter.notifyDataSetChanged()
-                } else {
-                    fetchUserNames(userIds.toList())
+                    return@addOnSuccessListener
                 }
-            }
-            .addOnFailureListener {
-                // 에러 처리 필요 시 여기에
-            }
-    }
 
-    private fun fetchUserNames(userIds: List<String>) {
-        chatUserList.clear()
-        var completed = 0
+                db.collection("Users")
+                    .whereIn("uid", otherUserIds.toList())
+                    .get()
+                    .addOnSuccessListener { usersSnapshot ->
+                        println("Users 컬렉션에서 가져온 사용자 수: ${usersSnapshot.size()}")
 
-        for (userId in userIds) {
-            db.collection("Users").document(userId)
-                .get()
-                .addOnSuccessListener { document ->
-                    val userName = document.getString("name") ?: "알 수 없음"
-                    chatUserList.add(Pair(userId, userName))
-                }
-                .addOnCompleteListener {
-                    completed++
-                    if (completed == userIds.size) {
-                        // 모든 사용자 정보 가져오기가 끝났을 때
-                        chatUserList.sortBy { it.second } // 이름순 정렬(optional)
+                        chatUserList.clear()
+                        for (doc in usersSnapshot.documents) {
+                            val uid = doc.getString("uid") ?: continue
+                            val name = doc.getString("name") ?: "알 수 없음"
+                            chatUserList.add(Pair(uid, name))
+                        }
                         adapter.notifyDataSetChanged()
                     }
-                }
-        }
+            }
     }
 }

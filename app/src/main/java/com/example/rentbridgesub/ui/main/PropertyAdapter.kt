@@ -27,21 +27,19 @@ class PropertyAdapter(
         val property = properties[position]
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-        holder.binding.tvTitle.text = property.title
+        holder.binding.tvTitle.text = property.address
         holder.binding.tvPrice.text = property.price
-        holder.binding.tvDescription.text = property.description
+        holder.binding.tvDescription.text = "${property.startDate} ~ ${property.endDate}"
 
         if (property.ownerId == currentUserId) {
             holder.binding.btnChat.visibility = View.GONE
         } else {
             holder.binding.btnChat.visibility = View.VISIBLE
-        }
-
-        holder.binding.btnChat.setOnClickListener {
-            val intent = Intent(holder.itemView.context, ChatActivity::class.java)
-            intent.putExtra("propertyId", property.id)
-            intent.putExtra("receiverId", property.ownerId)
-            holder.itemView.context.startActivity(intent)
+            holder.binding.btnChat.setOnClickListener {
+                val intent = Intent(holder.itemView.context, ChatActivity::class.java)
+                intent.putExtra("receiverId", property.ownerId) // 🔥 정확히 ownerId 넘기기
+                holder.itemView.context.startActivity(intent)
+            }
         }
 
         holder.itemView.setOnClickListener {

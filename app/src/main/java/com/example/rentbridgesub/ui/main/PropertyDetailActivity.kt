@@ -2,7 +2,6 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityPropertyDetailBinding
@@ -22,26 +21,25 @@ class PropertyDetailActivity : AppCompatActivity() {
 
         property = intent.getSerializableExtra("property") as? Property
 
-        property?.let {
-            binding.tvDetailAddress.text = it.address
-            binding.tvDetailPeriod.text = "${it.startDate} ~ ${it.endDate}"
-            binding.tvDetailPrice.text = it.price
+        property?.let { prop ->
+            binding.tvDetailAddress.text = prop.address
+            binding.tvDetailPeriod.text = "${prop.startDate} ~ ${prop.endDate}"
+            binding.tvDetailPrice.text = prop.price
 
-            if (it.imageUrl.isNotEmpty()) {
-                Picasso.get().load(it.imageUrl).into(binding.ivDetailImage)
+            if (prop.imageUrl.isNotEmpty()) {
+                Picasso.get().load(prop.imageUrl).into(binding.ivDetailImage)
             } else {
                 binding.ivDetailImage.setImageResource(android.R.color.darker_gray)
             }
 
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-            if (it.ownerId == currentUserId) {
-                binding.btnChat.visibility = View.GONE
+            if (prop.ownerId == currentUserId) {
+                binding.btnChat.visibility = android.view.View.GONE
             } else {
-                binding.btnChat.visibility = View.VISIBLE
+                binding.btnChat.visibility = android.view.View.VISIBLE
                 binding.btnChat.setOnClickListener {
                     val intent = Intent(this, ChatActivity::class.java)
-                    intent.putExtra("propertyId", property?.id)
-                    intent.putExtra("receiverId", property?.ownerId)
+                    intent.putExtra("receiverId", prop.ownerId) // 🔥 정확히 ownerId 넘기기
                     startActivity(intent)
                 }
             }

@@ -1,6 +1,7 @@
 package com.example.rentbridgesub.ui.chat
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rentbridgesub.data.ChatMessage
@@ -24,6 +25,15 @@ class ChatActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         receiverId = intent.getStringExtra("receiverId") ?: ""
+
+        if (receiverId.isEmpty()) {
+            Toast.makeText(this, "채팅 상대가 없습니다. (receiverId 없음)", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        } else {
+            Toast.makeText(this, "채팅 상대 UID: $receiverId", Toast.LENGTH_SHORT).show()
+        }
+
         val senderId = auth.currentUser?.uid ?: ""
         chatRoomId = if (senderId < receiverId) {
             "$senderId-$receiverId"
@@ -49,17 +59,11 @@ class ChatActivity : AppCompatActivity() {
             .addSnapshotListener { snapshot, _ ->
                 messageList.clear()
                 snapshot?.forEach { doc ->
-                    val message = doc.toObject(com.example.rentbridgesub.data.Message::class.java)
-                    // 🔥 Message -> ChatMessage 변환
-                    val chatMessage = ChatMessage(
-                        senderId = message.senderId,
-                        receiverId = message.receiverId,
-                        message = message.content,
-                        timestamp = message.timestamp
-                    )
-                    messageList.add(chatMessage)
+                    val message = doc.toObject(ChatMessage::class.java)
+                    messageList.add(message)
                 }
                 adapter.notifyDataSetChanged()
+                binding.recyclerViewChat.scrollToPosition(messageList.size - 1)
             }
     }
 
@@ -68,18 +72,43 @@ class ChatActivity : AppCompatActivity() {
         val senderId = auth.currentUser?.uid ?: return
 
         if (text.isNotEmpty()) {
-            val message = com.example.rentbridgesub.data.Message(
+            val message = ChatMessage(
                 senderId = senderId,
                 receiverId = receiverId,
-                content = text,
+                message = text,
                 timestamp = System.currentTimeMillis()
             )
 
-            db.collection("ChatRooms").document(chatRoomId)
-                .collection("Messages")
-                .add(message)
+            val chatRoomRef = db.collection("ChatRooms").document(chatRoomId)
 
-            binding.etMessage.setText("")
+            // 1. ChatRoom 문서 생성 (없으면)
+            chatRoomRef.get().addOnSuccessListener { document ->
+                if (!document.exists()) {
+                    val chatRoomData = hashMapOf(
+                        "users" to listOf(senderId, receiverId),
+                        "lastMessage" to text,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    chatRoomRef.set(chatRoomData)
+                } else {
+                    // 이미 존재하면 lastMessage 갱신
+                    chatRoomRef.update(
+                        mapOf(
+                            "lastMessage" to text,
+                            "timestamp" to System.currentTimeMillis()
+                        )
+                    )
+                }
+
+                // 2. Messages 하위 컬렉션에 메시지 저장
+                chatRoomRef.collection("Messages")
+                    .add(message)
+                    .addOnSuccessListener {
+                        binding.etMessage.setText("")
+                    }
+            }
         }
     }
+
+
 }
