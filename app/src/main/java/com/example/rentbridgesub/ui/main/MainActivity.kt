@@ -2,7 +2,10 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.rentbridgesub.R
 import com.example.rentbridgesub.databinding.ActivityMainBinding
 import com.example.rentbridgesub.ui.auth.LoginActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
@@ -46,18 +49,31 @@ class MainActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     binding.tvWelcome.text = "유저 정보 불러오기 실패"
                 }
+
+            FirebaseFirestore.getInstance().collection("Users").document(uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    val name = document.getString("name") ?: "사용자"
+                    findViewById<TextView>(R.id.tvUserName).text = name
+                }
         }
 
         binding.btnAddProperty.setOnClickListener {
             startActivity(Intent(this, AddPropertyActivity::class.java)) // 🔥 수정 완료
         }
 
-        binding.btnMyPage.setOnClickListener {
-            startActivity(Intent(this, MyPageActivity::class.java))
-        }
-
         binding.btnViewProperties.setOnClickListener {
             startActivity(Intent(this, PropertyListActivity::class.java))
+        }
+
+        findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
+            val intent = Intent(this, MapActivity::class.java)
+            startActivity(intent)
+        }
+
+        findViewById<LinearLayout>(R.id.navMyPage).setOnClickListener {
+            val intent = Intent(this, MyPageActivity::class.java)
+            startActivity(intent)
         }
     }
 }
