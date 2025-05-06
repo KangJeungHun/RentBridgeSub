@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -38,6 +39,10 @@ class SublessorHomeActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.navChat).setOnClickListener {
             startActivity(Intent(this, MyPageActivity::class.java))
             finish()
+        }
+
+        findViewById<Button>(R.id.btnAddProperty).setOnClickListener {
+            startActivity(Intent(this, AddPropertyActivity::class.java))
         }
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
