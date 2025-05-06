@@ -38,6 +38,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.main.SublessorHomeActivity" />
+        <activity android:name=".ui.main.SublesseeHomeActivity" />
+
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyC0tOG9EWPg4yqBH1plm6wrYnOMj7fkUrg"/>

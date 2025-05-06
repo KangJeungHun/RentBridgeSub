@@ -145,4 +145,16 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             fusedLocationClient.removeLocationUpdates(locationCallback)
         }
     }
+
+    override fun onBackPressed() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("앱 종료")
+            .setMessage("앱을 종료하시겠습니까?")
+            .setPositiveButton("예") { _, _ ->
+                finishAffinity() // 전체 액티비티 종료
+            }
+            .setNegativeButton("아니요", null)
+            .show()
+    }
+
 }

@@ -35,43 +35,28 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp" />
 
-            <!-- 최근 본 매물 카드 -->
+            <!-- 계약 현황 -->
+            <TextView
+                android:text="계약 현황"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="24dp">
 
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:background="@drawable/ic_placeholder"
-                        android:layout_marginEnd="12dp"/>
-
-                    <LinearLayout
-                        android:orientation="vertical"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:text="신촌"
-                            android:textStyle="bold"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"/>
-                        <TextView
-                            android:text="📍 15분"
-                            android:layout_height="wrap_content"
-                            android:layout_width="wrap_content"/>
-                    </LinearLayout>
-                </LinearLayout>
+                    android:padding="16dp"
+                    android:text="현재 없음"
+                    android:textSize="16sp"
+                    android:gravity="center"/>
             </androidx.cardview.widget.CardView>
 
             <!-- 매물 등록하기 (파란 버튼) -->
@@ -84,29 +69,27 @@
                 android:backgroundTint="@color/blue"
                 android:layout_marginBottom="12dp"/>
 
-            <!-- 내 매물 보기 (테두리 버튼) -->
-            <Button
-                android:id="@+id/btnViewProperties"
+            <!-- 내 매물 보기 -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="내 매물 보기"
-                android:backgroundTint="@color/blue"
-                android:textColor="@android:color/white"
-                android:layout_marginBottom="24dp"/>
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
 
-            <!-- 채팅/알림 섹션 -->
-            <TextView
-                android:text="문의 온 채팅/알림"
-                android:textStyle="bold"
-                android:drawableLeft="@drawable/ic_chat"
-                android:drawablePadding="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content" />
+                <TextView
+                    android:text="등록한 매물"
+                    android:textStyle="bold"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -133,7 +116,7 @@
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
-                            android:text="올림프0"
+                            android:text="xx 빌라"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
@@ -149,14 +132,64 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 인기 매물 -->
+            <!-- 채팅 섹션 -->
             <TextView
-                android:text="인기 매물"
+                android:text="문의 온 채팅"
                 android:textStyle="bold"
-                android:drawableLeft="@drawable/ic_hot"
+                android:drawableLeft="@drawable/ic_chat"
                 android:drawablePadding="8dp"
+                android:layout_marginBottom="8dp"
                 android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+                android:layout_width="wrap_content" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
+
+                    <!-- 썸네일 이미지 -->
+                    <ImageView
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:src="@drawable/ic_placeholder"
+                        android:layout_marginEnd="12dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/ic_launcher_background"/>
+
+                    <!-- 텍스트 정보 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/tvPropertyTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="김철수"
+                            android:textStyle="bold"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvUserAndMessage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="보증금 협의되나요?"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
 
         </LinearLayout>
     </ScrollView>
@@ -166,5 +199,4 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
