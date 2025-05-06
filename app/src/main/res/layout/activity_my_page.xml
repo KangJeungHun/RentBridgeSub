@@ -1,26 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnChatList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="채팅 목록 보기"
-        android:layout_margin="16dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+<!--    <Button-->
+<!--        android:id="@+id/btnChatList"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="채팅 목록 보기"-->
+<!--        android:layout_margin="16dp"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent" />-->
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="로그아웃"
-        android:layout_margin="16dp"
+<!--    <Button-->
+<!--        android:id="@+id/btnLogout"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="로그아웃"-->
+<!--        android:layout_margin="16dp"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        tools:ignore="DuplicateIds" />-->
+
+    <ScrollView
+        android:id="@+id/scrollArea"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@+id/customBottomBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="홍길동 님의 마이페이지"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnEditProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="회원 정보 수정"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnManageMyProperties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="내 매물 관리"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnMyFavorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="찜한 매물"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnChatList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="채팅 내역"
+                android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="로그아웃"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="@color/red"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </ScrollView>
 
 
     <androidx.recyclerview.widget.RecyclerView
