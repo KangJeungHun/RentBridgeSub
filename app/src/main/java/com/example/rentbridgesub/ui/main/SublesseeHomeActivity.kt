@@ -43,6 +43,11 @@ class SublesseeHomeActivity : AppCompatActivity() {
             // stay here
         }
 
+        findViewById<TextView>(R.id.btnViewAllProperties).setOnClickListener {
+            // 전체 매물 리스트 화면으로 이동
+            startActivity(Intent(this, PropertyListActivity::class.java))
+        }
+
         findViewById<TextView>(R.id.btnRecentMore).setOnClickListener {
             // 최근 본 매물 전체 보기 화면으로 이동
         }

@@ -139,6 +139,17 @@
                 android:text="지도에서 찾기"
                 android:layout_marginBottom="24dp" />
 
+<!--            전체 매물 보기 버튼-->
+            <Button
+                android:id="@+id/btnViewAllProperties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="전체 매물 보기"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="@color/blue"
+                android:textColor="@android:color/white"/>
+
+
             <!-- 인기 매물 -->
             <LinearLayout
                 android:layout_width="match_parent"
