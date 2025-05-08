@@ -22,6 +22,8 @@ class PropertyDetailActivity : AppCompatActivity() {
         property = intent.getSerializableExtra("property") as? Property
 
         property?.let { prop ->
+            binding.tvDetailTitle.text = prop.title
+            binding.tvDetailDescription.text = prop.description
             binding.tvDetailAddress.text = prop.address
             binding.tvDetailPeriod.text = "${prop.startDate} ~ ${prop.endDate}"
             binding.tvDetailPrice.text = prop.price

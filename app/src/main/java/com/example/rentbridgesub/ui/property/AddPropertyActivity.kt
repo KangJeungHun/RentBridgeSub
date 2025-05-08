@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.property
 
 import android.app.Activity
 import android.content.Intent
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -12,6 +13,7 @@ import com.example.rentbridgesub.databinding.ActivityAddPropertyBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.util.Locale
 import java.util.UUID
 
 class AddPropertyActivity : AppCompatActivity() {
@@ -37,20 +39,37 @@ class AddPropertyActivity : AppCompatActivity() {
         }
 
         binding.btnRegister.setOnClickListener {
+            val title = binding.etTitle.text.toString()
+            val description = binding.etDescription.text.toString()
             val address = binding.etAddress.text.toString()
             val price = binding.etPrice.text.toString()
             val startDate = binding.etStartDate.text.toString()
             val endDate = binding.etEndDate.text.toString()
 
             if (address.isNotEmpty() && startDate.isNotEmpty() && endDate.isNotEmpty()) {
-                uploadProperty(address, price, startDate, endDate)
+                uploadProperty(title, description, address, price, startDate, endDate)
+//                getCoordinatesAndUpload(address, price, startDate, endDate)
             } else {
                 Toast.makeText(this, "주소와 계약 기간을 입력하세요", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun uploadProperty(address: String, price: String, startDate: String, endDate: String) {
+//    private fun getCoordinatesAndUpload(address: String, price: String, startDate: String, endDate: String) {
+//        val geocoder = Geocoder(this, Locale.getDefault())
+//        val addressList = geocoder.getFromLocationName(address, 1)
+//
+//        if (!addressList.isNullOrEmpty()) {
+//            val location = addressList[0]
+//            val latitude = location.latitude
+//            val longitude = location.longitude
+//            uploadProperty(address, price, startDate, endDate, latitude, longitude)
+//        } else {
+//            Toast.makeText(this, "주소를 정확히 입력해주세요", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
+    private fun uploadProperty(title: String, description: String, address: String, price: String, startDate: String, endDate: String) {
         val propertyId = UUID.randomUUID().toString()
 
         if (selectedImageUri != null) {
@@ -58,7 +77,7 @@ class AddPropertyActivity : AppCompatActivity() {
             storageRef.putFile(selectedImageUri!!)
                 .addOnSuccessListener {
                     storageRef.downloadUrl.addOnSuccessListener { uri ->
-                        saveProperty(propertyId, address, price, startDate, endDate, uri.toString())
+                        saveProperty(propertyId, title, description, address, price, startDate, endDate, uri.toString())
                     }
                 }
                 .addOnFailureListener {
@@ -66,12 +85,14 @@ class AddPropertyActivity : AppCompatActivity() {
                 }
         } else {
             // 사진 없이 등록
-            saveProperty(propertyId, address, price, startDate, endDate, "")
+            saveProperty(propertyId, title, description, address, price, startDate, endDate, "")
         }
     }
 
     private fun saveProperty(
         propertyId: String,
+        title: String,
+        description: String,
         address: String,
         price: String,
         startDate: String,
@@ -81,6 +102,8 @@ class AddPropertyActivity : AppCompatActivity() {
         val property = Property(
             id = propertyId,
             ownerId = auth.currentUser?.uid ?: "",
+            title = title,
+            description = description,
             address = address,
             price = price,
             startDate = startDate,

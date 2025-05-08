@@ -27,9 +27,10 @@ class PropertyAdapter(
         val property = properties[position]
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-        holder.binding.tvTitle.text = property.address
+
+        holder.binding.tvTitle.text = property.title
         holder.binding.tvPrice.text = property.price
-        holder.binding.tvDescription.text = "${property.startDate} ~ ${property.endDate}"
+        holder.binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
 
         if (property.ownerId == currentUserId) {
             holder.binding.btnChat.visibility = View.GONE
