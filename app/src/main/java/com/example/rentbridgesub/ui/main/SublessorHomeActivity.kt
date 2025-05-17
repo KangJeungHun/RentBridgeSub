@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.R
+import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,6 +19,12 @@ class SublessorHomeActivity : AppCompatActivity() {
 
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         val nameTextView = findViewById<TextView>(R.id.tvWelcome)
+        val registeredPropertyCard = findViewById<androidx.cardview.widget.CardView>(R.id.registeredPropertyCard)
+        registeredPropertyCard.setOnClickListener {
+            startActivity(Intent(this, ManagePropertiesActivity::class.java))
+        }
+
+
 
         FirebaseFirestore.getInstance().collection("Users").document(uid!!)
             .get()

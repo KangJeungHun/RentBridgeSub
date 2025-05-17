@@ -87,6 +87,12 @@
                 android:backgroundTint="@color/red"
                 android:textColor="@android:color/white" />
 
+            <Button
+                android:id="@+id/btnManageProperties"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="내 매물 관리" />
+
         </LinearLayout>
     </ScrollView>
 

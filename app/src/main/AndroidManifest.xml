@@ -40,6 +40,12 @@
 
         <activity android:name=".ui.main.SublessorHomeActivity" />
         <activity android:name=".ui.main.SublesseeHomeActivity" />
+        <activity android:name=".ui.editprofile.EditProfileActivity" />
+        <activity android:name=".ui.manageproperty.ManagePropertiesActivity"/>
+        <activity android:name=".ui.manageproperty.EditPropertyActivity"/>
+
+
+
 
 
         <meta-data

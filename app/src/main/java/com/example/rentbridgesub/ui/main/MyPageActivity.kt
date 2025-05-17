@@ -11,6 +11,8 @@ import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityMyPageBinding
 import com.example.rentbridgesub.ui.auth.LoginActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
+import com.example.rentbridgesub.ui.editprofile.EditProfileActivity
+import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -33,31 +35,37 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.btnLogout.setOnClickListener {
-            FirebaseAuth.getInstance().signOut() // 로그아웃 수행
+        binding.recyclerViewMyProperties.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewMyProperties.adapter = adapter
 
+        binding.btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
 
-
-        binding.recyclerViewMyProperties.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewMyProperties.adapter = adapter
-
         binding.btnChatList.setOnClickListener {
             startActivity(Intent(this, ChatListActivity::class.java))
         }
 
-        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
+        binding.btnEditProfile.setOnClickListener {
+            startActivity(Intent(this, EditProfileActivity::class.java))
+        }
+
+        // ✅ 여기 추가
+        binding.btnManageMyProperties.setOnClickListener {
+            val intent = Intent(this, ManagePropertiesActivity::class.java)
             startActivity(intent)
         }
 
+        findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+        }
+
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
-            val intent = Intent(this, MapActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MapActivity::class.java))
         }
 
         loadMyProperties()
@@ -87,11 +95,9 @@ class MyPageActivity : AppCompatActivity() {
             .setTitle("앱 종료")
             .setMessage("앱을 종료하시겠습니까?")
             .setPositiveButton("예") { _, _ ->
-                finishAffinity() // 전체 액티비티 종료
+                finishAffinity()
             }
             .setNegativeButton("아니요", null)
             .show()
     }
-
-
 }
