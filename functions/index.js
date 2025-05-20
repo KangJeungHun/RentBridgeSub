@@ -31,7 +31,7 @@ exports.registerProperty = functions.https.onRequest(async (req, res) => {
 
   try {
     const geoRes = await axios.get("https://dapi.kakao.com/v2/local/search/address.json", {
-      headers: { Authorization: `ee2b6e2d5141747d912a9540432a7a61` },
+      headers: { Authorization: `KakaoAK ee2b6e2d5141747d912a9540432a7a61` },
       params: { query: address }
     });
 

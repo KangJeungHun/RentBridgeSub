@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
-import com.example.rentbridgesub.ui.property.PropertyBottomSheet
+//import com.example.rentbridgesub.ui.property.PropertyBottomSheet
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -63,6 +63,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
             startLocationUpdates()
+
+            loadPropertyMarkersFromFirestore()
 //            loadPropertyMarkers()
 
             loadMockMarkers()
@@ -70,6 +72,46 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             requestLocationPermission()
         }
     }
+
+    private fun loadPropertyMarkersFromFirestore() {
+        val db = FirebaseFirestore.getInstance()
+        val propertyList = mutableListOf<Property>()
+        db.collection("Properties")
+            .get()
+            .addOnSuccessListener { documents ->
+                for (doc in documents) {
+                    val property = doc.toObject(Property::class.java)
+                    val position = LatLng(property.latitude, property.longitude)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(position)
+                            .title(property.title)
+                            .snippet("📍 ${property.address}\n💰 ${property.price}\n📅 ${property.startDate} ~ ${property.endDate}")
+                    )
+
+                    propertyList.add(property)
+                }
+                setMarkerClickListener(propertyList)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "매물 로딩 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun setMarkerClickListener(propertyList: List<Property>) {
+        mMap.setOnMarkerClickListener { marker ->
+            val matched = propertyList.find {
+                it.latitude == marker.position.latitude && it.longitude == marker.position.longitude
+            }
+            matched?.let {
+                val bottomSheet = PropertyBottomSheet(it)
+                bottomSheet.show(supportFragmentManager, bottomSheet.tag)
+            }
+            true
+        }
+    }
+
+
 
     private fun loadMockMarkers() {
         val mockProperties = listOf(

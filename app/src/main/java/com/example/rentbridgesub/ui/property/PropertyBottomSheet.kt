@@ -1,23 +1,35 @@
-package com.example.rentbridgesub.ui.property
+package com.example.rentbridgesub.ui.main
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
+import com.example.rentbridgesub.databinding.BottomSheetMapPropertyBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFragment() {
+
+    private var _binding: BottomSheetMapPropertyBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.bottom_sheet_map_property, container, false)
-        view.findViewById<TextView>(R.id.tvTitle).text = property.title
-        view.findViewById<TextView>(R.id.tvAddress).text = property.address
-        view.findViewById<TextView>(R.id.tvPrice).text = property.price
-//        view.findViewById<TextView>(R.id.tvPeriod).text = "${property.startDate} ~ ${property.endDate}"
-        return view
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = BottomSheetMapPropertyBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.tvTitle.text = property.title
+        binding.tvAddress.text = property.address
+        binding.tvPrice.text = property.price
+        binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
