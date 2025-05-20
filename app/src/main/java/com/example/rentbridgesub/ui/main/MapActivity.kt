@@ -3,13 +3,20 @@ package com.example.rentbridgesub.ui.main
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.os.Bundle
 import android.os.Looper
+import android.view.inputmethod.EditorInfo
+import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
 //import com.example.rentbridgesub.ui.property.PropertyBottomSheet
@@ -27,6 +34,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import org.json.JSONObject
+import java.net.URLEncoder
+import java.util.Locale
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -44,6 +54,24 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        // 🔍 검색 버튼 처리
+        val etSearch = findViewById<EditText>(R.id.etSearch)
+
+        etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val keyword = etSearch.text.toString()
+                if (keyword.isNotEmpty()) {
+                    searchLocation(keyword) { latLng ->
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+                    }
+                }
+                true
+            } else {
+                false
+            }
+        }
+
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
@@ -67,11 +95,43 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             loadPropertyMarkersFromFirestore()
 //            loadPropertyMarkers()
 
-            loadMockMarkers()
+//            loadMockMarkers()
         } else {
             requestLocationPermission()
         }
     }
+
+    private fun searchLocation(keyword: String, onSuccess: (LatLng) -> Unit) {
+        val url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+        val queue = Volley.newRequestQueue(this)
+
+        val request = object : StringRequest(
+            Request.Method.GET,
+            "$url?query=${URLEncoder.encode(keyword, "UTF-8")}",
+            { response ->
+                val json = JSONObject(response)
+                val documents = json.getJSONArray("documents")
+                if (documents.length() > 0) {
+                    val first = documents.getJSONObject(0)
+                    val lat = first.getString("y").toDouble()
+                    val lng = first.getString("x").toDouble()
+                    onSuccess(LatLng(lat, lng))
+                } else {
+                    Toast.makeText(this, "결과가 없습니다", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Toast.makeText(this, "API 오류: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getHeaders(): MutableMap<String, String> {
+                return mutableMapOf("Authorization" to "KakaoAK ee2b6e2d5141747d912a9540432a7a61")
+            }
+        }
+
+        queue.add(request)
+    }
+
 
     private fun loadPropertyMarkersFromFirestore() {
         val db = FirebaseFirestore.getInstance()
