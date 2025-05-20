@@ -1,23 +1,37 @@
 package com.example.rentbridgesub.ui.chat
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rentbridgesub.data.ChatMessage
 import com.example.rentbridgesub.databinding.ActivityChatBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.SetOptions
+
+
 
 class ChatActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChatBinding
     private val db = FirebaseFirestore.getInstance()
+    private val storage = FirebaseStorage.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private lateinit var adapter: ChatAdapter
     private val messageList = mutableListOf<ChatMessage>()
     private lateinit var receiverId: String
     private lateinit var chatRoomId: String
+
+    private val imagePicker =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { uploadImage(it) }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,11 +41,9 @@ class ChatActivity : AppCompatActivity() {
         receiverId = intent.getStringExtra("receiverId") ?: ""
 
         if (receiverId.isEmpty()) {
-            Toast.makeText(this, "채팅 상대가 없습니다. (receiverId 없음)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "채팅 상대가 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
-        } else {
-            Toast.makeText(this, "채팅 상대 UID: $receiverId", Toast.LENGTH_SHORT).show()
         }
 
         val senderId = auth.currentUser?.uid ?: ""
@@ -49,6 +61,10 @@ class ChatActivity : AppCompatActivity() {
 
         binding.btnSend.setOnClickListener {
             sendMessage()
+        }
+
+        binding.btnImage.setOnClickListener {
+            imagePicker.launch("image/*")
         }
     }
 
@@ -76,39 +92,39 @@ class ChatActivity : AppCompatActivity() {
                 senderId = senderId,
                 receiverId = receiverId,
                 message = text,
+                imageUrl = "",
                 timestamp = System.currentTimeMillis()
             )
 
             val chatRoomRef = db.collection("ChatRooms").document(chatRoomId)
 
-            // 1. ChatRoom 문서 생성 (없으면)
-            chatRoomRef.get().addOnSuccessListener { document ->
-                if (!document.exists()) {
-                    val chatRoomData = hashMapOf(
-                        "users" to listOf(senderId, receiverId),
-                        "lastMessage" to text,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    chatRoomRef.set(chatRoomData)
-                } else {
-                    // 이미 존재하면 lastMessage 갱신
-                    chatRoomRef.update(
-                        mapOf(
-                            "lastMessage" to text,
-                            "timestamp" to System.currentTimeMillis()
-                        )
-                    )
-                }
-
-                // 2. Messages 하위 컬렉션에 메시지 저장
-                chatRoomRef.collection("Messages")
-                    .add(message)
-                    .addOnSuccessListener {
-                        binding.etMessage.setText("")
-                    }
-            }
+            chatRoomRef.set(mapOf("users" to listOf(senderId, receiverId)), SetOptions.merge())
+            chatRoomRef.collection("Messages").add(message)
+            binding.etMessage.setText("")
         }
     }
 
+    private fun uploadImage(uri: Uri) {
+        val senderId = auth.currentUser?.uid ?: return
+        val fileName = "chat_images/${System.currentTimeMillis()}_${uri.lastPathSegment}"
+        val ref = storage.reference.child(fileName)
 
+        ref.putFile(uri)
+            .continueWithTask { ref.downloadUrl }
+            .addOnSuccessListener { downloadUri ->
+                val message = ChatMessage(
+                    senderId = senderId,
+                    receiverId = receiverId,
+                    message = "",
+                    imageUrl = downloadUri.toString(),
+                    timestamp = System.currentTimeMillis()
+                )
+
+                val chatRoomRef = db.collection("ChatRooms").document(chatRoomId)
+                chatRoomRef.collection("Messages").add(message)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "이미지 전송 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
 }

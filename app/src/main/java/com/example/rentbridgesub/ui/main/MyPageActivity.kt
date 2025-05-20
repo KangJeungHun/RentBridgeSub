@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -54,7 +55,6 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
-        // ✅ 여기 추가
         binding.btnManageMyProperties.setOnClickListener {
             val intent = Intent(this, ManagePropertiesActivity::class.java)
             startActivity(intent)
@@ -68,7 +68,26 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, MapActivity::class.java))
         }
 
+        applyUserTypeVisibility()
         loadMyProperties()
+    }
+
+    private fun applyUserTypeVisibility() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("Users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                val userType = doc.getString("userType")
+                when (userType) {
+                    "sublessor" -> {
+                        // 전대인: 찜한 매물 버튼 제거
+                        binding.btnMyFavorites.visibility = View.GONE
+                    }
+                    "sublessee" -> {
+                        // 전차인: 내 매물 관리 버튼 제거
+                        binding.btnManageMyProperties.visibility = View.GONE
+                    }
+                }
+            }
     }
 
     private fun loadMyProperties() {
@@ -94,9 +113,7 @@ class MyPageActivity : AppCompatActivity() {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("앱 종료")
             .setMessage("앱을 종료하시겠습니까?")
-            .setPositiveButton("예") { _, _ ->
-                finishAffinity()
-            }
+            .setPositiveButton("예") { _, _ -> finishAffinity() }
             .setNegativeButton("아니요", null)
             .show()
     }

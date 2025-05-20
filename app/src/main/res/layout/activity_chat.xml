@@ -23,6 +23,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <ImageButton
+            android:id="@+id/btnImage"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:contentDescription="이미지 선택" />
+
         <EditText
             android:id="@+id/etMessage"
             android:layout_width="0dp"

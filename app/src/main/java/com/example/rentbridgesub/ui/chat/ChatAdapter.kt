@@ -1,13 +1,16 @@
 package com.example.rentbridgesub.ui.chat
 
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.ChatMessage
 import com.example.rentbridgesub.databinding.ItemChatMessageBinding
+import com.squareup.picasso.Picasso
 
 class ChatAdapter(
     private val messageList: List<ChatMessage>,
@@ -24,20 +27,37 @@ class ChatAdapter(
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = messageList[position]
+        val isSender = message.senderId == currentUserId
 
-        holder.binding.tvMessage.text = message.message   // 🔥 여기 수정 ("content" ❌ "message" ✅)
-
-        val params = holder.binding.tvMessage.layoutParams as FrameLayout.LayoutParams
-        if (message.senderId == currentUserId) {
-            params.gravity = android.view.Gravity.END
-            holder.binding.tvMessage.setBackgroundResource(R.drawable.bg_message_sent)
-            holder.binding.tvMessage.setTextColor(android.graphics.Color.WHITE)
+        // 텍스트 메시지
+        if (message.message.isNotEmpty()) {
+            holder.binding.tvMessage.text = message.message
+            holder.binding.tvMessage.visibility = View.VISIBLE
         } else {
-            params.gravity = android.view.Gravity.START
-            holder.binding.tvMessage.setBackgroundResource(R.drawable.bg_message_received)
-            holder.binding.tvMessage.setTextColor(android.graphics.Color.BLACK)
+            holder.binding.tvMessage.visibility = View.GONE
         }
-        holder.binding.tvMessage.layoutParams = params
+
+        // 이미지 메시지
+        if (message.imageUrl.isNotEmpty()) {
+            holder.binding.ivImage.visibility = View.VISIBLE
+            Picasso.get().load(message.imageUrl).into(holder.binding.ivImage)
+        } else {
+            holder.binding.ivImage.visibility = View.GONE
+        }
+
+        // 정렬 설정
+        val containerParams = holder.binding.messageContainer.layoutParams as FrameLayout.LayoutParams
+        containerParams.gravity = if (isSender) Gravity.END else Gravity.START
+        holder.binding.messageContainer.layoutParams = containerParams
+
+        // 배경 및 글자 색 설정
+        if (isSender) {
+            holder.binding.tvMessage.setBackgroundResource(R.drawable.bg_message_sent)
+            holder.binding.tvMessage.setTextColor(ContextCompat.getColor(holder.itemView.context, android.R.color.white))
+        } else {
+            holder.binding.tvMessage.setBackgroundResource(R.drawable.bg_message_received)
+            holder.binding.tvMessage.setTextColor(ContextCompat.getColor(holder.itemView.context, android.R.color.black))
+        }
     }
 
     override fun getItemCount(): Int = messageList.size
