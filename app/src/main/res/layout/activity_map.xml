@@ -24,7 +24,7 @@
             android:layout_weight="1"
             android:layout_height="40dp"
             android:background="@android:color/white"
-            android:hint="장소, 지하철역, 건물명 검색"
+            android:hint="지역명, 지하철역, 건물명 검색"
             android:imeOptions="actionSearch"
             android:inputType="text" />
 

@@ -31,6 +31,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -62,8 +63,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val keyword = etSearch.text.toString()
                 if (keyword.isNotEmpty()) {
-                    searchLocation(keyword) { latLng ->
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+                    searchLocation(keyword) { bounds, zoomLevel ->
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, zoomLevel))
                     }
                 }
                 true
@@ -71,6 +72,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 false
             }
         }
+
+        val btnSearch = findViewById<Button>(R.id.btnSearch)
+        btnSearch.setOnClickListener {
+            val keyword = etSearch.text.toString()
+            if (keyword.isNotEmpty()) {
+                searchLocation(keyword) { bounds, zoomLevel ->
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(bounds.center, zoomLevel))
+                }
+            } else {
+                Toast.makeText(this, "검색어를 입력하세요", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
@@ -101,7 +115,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun searchLocation(keyword: String, onSuccess: (LatLng) -> Unit) {
+    private fun searchLocation(keyword: String, onSuccess: (LatLngBounds, Float) -> Unit) {
         val url = "https://dapi.kakao.com/v2/local/search/keyword.json"
         val queue = Volley.newRequestQueue(this)
 
@@ -115,7 +129,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                     val first = documents.getJSONObject(0)
                     val lat = first.getString("y").toDouble()
                     val lng = first.getString("x").toDouble()
-                    onSuccess(LatLng(lat, lng))
+
+                    val category = first.optString("category_group_code", "")
+
+                    // 서울 같은 넓은 지역을 보기 좋게 보여주기 위해 bounds 적용
+                    val bounds = LatLngBounds(
+                        LatLng(lat - 0.01, lng - 0.01),  // 남서
+                        LatLng(lat + 0.01, lng + 0.01)   // 북동
+                    )
+
+                    val zoomLevel = when (category) {
+                        "SW8", "BK9", "MT1", "OL7" -> 17f  // 지하철, 은행, 마트 등 -> 더 확대
+                        else -> 14f  // 일반 지역
+                    }
+
+                    onSuccess(bounds, zoomLevel)
                 } else {
                     Toast.makeText(this, "결과가 없습니다", Toast.LENGTH_SHORT).show()
                 }
