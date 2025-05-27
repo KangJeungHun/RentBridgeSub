@@ -5,6 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- 이미지 뷰 추가 -->
+    <ImageView
+        android:id="@+id/ivPropertyImage"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="12dp"
+        android:background="@android:color/darker_gray" />
+
     <TextView android:id="@+id/tvTitle"
         android:text="제목"
         android:textSize="18sp"

@@ -26,6 +26,13 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
         binding.tvAddress.text = property.address
         binding.tvPrice.text = property.price
         binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
+
+        // 🔽 이미지 로드
+        if (property.imageUrl.isNotEmpty()) {
+            com.squareup.picasso.Picasso.get().load(property.imageUrl).into(binding.ivPropertyImage)
+        } else {
+            binding.ivPropertyImage.setImageResource(android.R.color.darker_gray)
+        }
     }
 
     override fun onDestroyView() {
