@@ -1,39 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="20dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- 이미지 뷰 추가 -->
-    <ImageView
-        android:id="@+id/ivPropertyImage"
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="20dp"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:layout_marginBottom="12dp"
-        android:background="@android:color/darker_gray" />
+        android:layout_height="wrap_content">
 
-    <TextView android:id="@+id/tvTitle"
-        android:text="제목"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <!-- 이미지 뷰 추가 -->
+        <ImageView
+            android:id="@+id/ivPropertyImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray" />
 
-    <TextView android:id="@+id/tvAddress"
-        android:text="주소"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView android:id="@+id/tvTitle"
+            android:text="제목"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-    <TextView android:id="@+id/tvPrice"
-        android:text="가격"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tvOwnerName"
+            android:text="등록자 이름"
+            android:textStyle="italic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
 
-    <TextView android:id="@+id/tvPeriod"
-        android:text="기간"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-</LinearLayout>
+
+        <TextView android:id="@+id/tvAddress"
+            android:text="주소"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView android:id="@+id/tvPrice"
+            android:text="가격"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView android:id="@+id/tvPeriod"
+            android:text="기간"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- 🔽 상세 설명 추가 -->
+        <TextView
+            android:id="@+id/tvDescription"
+            android:text="상세 설명"
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- 🔽 채팅하기 버튼 -->
+        <Button
+            android:id="@+id/btnChat"
+            android:text="채팅하기"
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+</ScrollView>

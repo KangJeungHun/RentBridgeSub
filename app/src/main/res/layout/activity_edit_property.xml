@@ -19,6 +19,13 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="16dp" />
 
+            <ImageView
+                android:id="@+id/etImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_placeholder" />
+
             <EditText
                 android:id="@+id/etTitle"
                 android:layout_width="match_parent"

@@ -112,16 +112,19 @@
                         android:layout_height="wrap_content">
 
                         <TextView
-                            android:text="신촌 원룸"
+                            android:id="@+id/tvPropertyTitle"
+                            android:text="등록한 매물 제목"
                             android:textStyle="bold"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
-                            android:text="xx 빌라"
+                            android:id="@+id/tvPropertyAddress"
+                            android:text="주소"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
-                            android:text="400,000 원"
+                            android:id="@+id/tvPropertyPrice"
+                            android:text="보증금/월세"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                     </LinearLayout>
@@ -173,7 +176,6 @@
                         android:layout_weight="1">
 
                         <TextView
-                            android:id="@+id/tvPropertyTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="김철수"

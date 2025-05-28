@@ -43,14 +43,19 @@ class AddPropertyActivity : AppCompatActivity() {
             val startDate = binding.etStartDate.text.toString()
             val endDate = binding.etEndDate.text.toString()
 
-            if (address.isNotEmpty() && startDate.isNotEmpty() && endDate.isNotEmpty()) {
-                if (selectedImageUri != null) {
-                    uploadImageAndRegister(title, description, address, price, startDate, endDate)
+            if (title.isNotEmpty() && description.isNotEmpty() &&
+                price.isNotEmpty() && address.isNotEmpty() &&
+                startDate.isNotEmpty() && endDate.isNotEmpty()) {
+
+                if (selectedImageUri == null) {
+//                    uploadImageAndRegister(title, description, address, price, startDate, endDate)
+                    Toast.makeText(this, "이미지를 선택하세요", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 } else {
-                    callRegisterPropertyFunction(title, description, address, price, startDate, endDate, "")
+                    uploadImageAndRegister(title, description, address, price, startDate, endDate)
                 }
             } else {
-                Toast.makeText(this, "주소와 계약 기간을 입력하세요", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "모든 정보를 입력하세요", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -71,6 +76,7 @@ class AddPropertyActivity : AppCompatActivity() {
                 .addOnSuccessListener {
                     storageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
                         callRegisterPropertyFunction(
+                            propertyId,
                             title,
                             description,
                             address,
@@ -88,6 +94,7 @@ class AddPropertyActivity : AppCompatActivity() {
     }
 
     private fun callRegisterPropertyFunction(
+        propertyId: String,
         title: String,
         description: String,
         address: String,
@@ -97,7 +104,7 @@ class AddPropertyActivity : AppCompatActivity() {
         imageUrl: String
     ) {
         val json = JSONObject().apply {
-            put("id", UUID.randomUUID().toString())
+            put("id", propertyId)
             put("ownerId", auth.currentUser?.uid)
             put("title", title)
             put("description", description)

@@ -24,13 +24,38 @@ class SublessorHomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ManagePropertiesActivity::class.java))
         }
 
-
-
         FirebaseFirestore.getInstance().collection("Users").document(uid!!)
             .get()
             .addOnSuccessListener {
                 val name = it.getString("name") ?: "사용자"
                 nameTextView.text = "$name 님, 환영합니다!"
+            }
+
+        val titleView = findViewById<TextView>(R.id.tvPropertyTitle)
+        val addressView = findViewById<TextView>(R.id.tvPropertyAddress)
+        val priceView = findViewById<TextView>(R.id.tvPropertyPrice)
+
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Properties")
+            .whereEqualTo("ownerId", uid)
+            .limit(1)  // 첫 번째 매물만
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val property = documents.documents[0]
+                    titleView.text = property.getString("title") ?: "제목 없음"
+                    addressView.text = property.getString("address") ?: "주소 없음"
+                    priceView.text = property.getString("price") ?: "가격 정보 없음"
+                } else {
+                    titleView.text = "등록된 매물이 없습니다"
+                    addressView.text = ""
+                    priceView.text = ""
+                }
+            }
+            .addOnFailureListener {
+                titleView.text = "매물 정보를 불러올 수 없습니다"
+                priceView.text = ""
+                addressView.text = ""
             }
 
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
