@@ -34,11 +34,12 @@ class EditPropertyActivity : AppCompatActivity() {
 
         @Suppress("DEPRECATION")
         property = intent.getSerializableExtra("property") as Property
+        Log.d("EditActivity", "받은 property.id = ${property.id}")
 
-//        // 기존 이미지 로드 (Glide 또는 Picasso 사용)
-//        Picasso.get()
-//            .load(property.imageUrl)
-//            .into(binding.etImage)
+        // 기존 이미지 표시
+        if (!property.imageUrl.isNullOrEmpty()) {
+            Picasso.get().load(property.imageUrl).into(binding.etImage)
+        }
 
         // 이미지 뷰 클릭 시 이미지 선택
         binding.etImage.setOnClickListener {
@@ -60,43 +61,29 @@ class EditPropertyActivity : AppCompatActivity() {
             val updatedStartDate = binding.etStartDate.text.toString()
             val updatedEndDate = binding.etEndDate.text.toString()
 
-            if (!property.id.isNullOrEmpty() && selectedImageUri != null) {
-                val extension = contentResolver.getType(selectedImageUri!!)
-                    ?.substringAfterLast("/") ?: "jpg"
+            if (selectedImageUri != null) {
+                val fileRef = storage.reference.child("properties/${property.id}.jpg")
 
-                Log.d("Upload", "selectedImageUri = $selectedImageUri")
-                Log.d("Upload", "property.id = ${property.id}")
-                Log.d("Upload", "Uploading image to properties/${property.id}.$extension")
-
-
-                val fileRef = storage.reference.child("properties/${property.id}.$extension")
-                val inputStream = contentResolver.openInputStream(selectedImageUri!!)
-
-                fileRef.putStream(inputStream!!)
-                    .continueWithTask { task ->
-                        if (!task.isSuccessful) {
-                            task.exception?.let { throw it }
+                selectedImageUri?.let { uri ->
+                    fileRef.putFile(uri)
+                        .addOnSuccessListener {
+                            fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                                updateFirestoreProperty(
+                                    updatedTitle,
+                                    updatedDesc,
+                                    updatedPrice,
+                                    updatedAddress,
+                                    updatedStartDate,
+                                    updatedEndDate,
+                                    downloadUri.toString()
+                                )
+                            }
                         }
-                        fileRef.downloadUrl
-                    }
-                    .addOnSuccessListener { downloadUri ->
-                        updateFirestoreProperty(
-                            updatedTitle, updatedDesc, updatedPrice,
-                            updatedAddress, updatedStartDate, updatedEndDate,
-                            downloadUri.toString()
-                        )
-                    }
-                    .addOnFailureListener {
-                        Log.e("UploadError", "이미지 업로드 실패", it)
-                        Toast.makeText(this, "이미지 업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
-                    }
-            } else {
-                Toast.makeText(this, "이미지 또는 매물 ID가 유효하지 않습니다", Toast.LENGTH_SHORT).show()
-                updateFirestoreProperty(
-                    updatedTitle, updatedDesc, updatedPrice,
-                    updatedAddress, updatedStartDate, updatedEndDate,
-                    property.imageUrl // 기존 이미지 유지
-                )
+                        .addOnFailureListener {
+                            Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                }
             }
         }
     }
@@ -110,25 +97,31 @@ class EditPropertyActivity : AppCompatActivity() {
         endDate: String,
         imageUrl: String
     ) {
-        db.collection("Properties").document(property.id)
-            .update(
-                mapOf(
-                    "title" to title,
-                    "description" to desc,
-                    "price" to price,
-                    "address" to address,
-                    "startDate" to startDate,
-                    "endDate" to endDate,
-                    "imageUrl" to imageUrl
-                )
-            )
-            .addOnSuccessListener {
-                Toast.makeText(this, "매물 수정 완료", Toast.LENGTH_SHORT).show()
-                finish()
+        db.collection("Properties")
+            .whereEqualTo("id", property.id)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val docRef = querySnapshot.documents[0].reference
+                    docRef.update(
+                        mapOf(
+                            "title" to title,
+                            "description" to desc,
+                            "price" to price,
+                            "address" to address,
+                            "startDate" to startDate,
+                            "endDate" to endDate,
+                            "imageUrl" to imageUrl
+                        )
+                    )
+                    Toast.makeText(this, "수정 완료", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "해당 ID의 문서를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
             .addOnFailureListener {
+                Log.e("FirestoreUpdate", "수정 실패", it)
                 Toast.makeText(this, "수정 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
-
 }
