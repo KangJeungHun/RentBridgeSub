@@ -30,6 +30,8 @@ class MyPageActivity : AppCompatActivity() {
         binding = ActivityMyPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        loadUserName()
+
         adapter = PropertyAdapter(propertyList) { property ->
             val intent = Intent(this, PropertyDetailActivity::class.java)
             intent.putExtra("property", property)
@@ -70,6 +72,18 @@ class MyPageActivity : AppCompatActivity() {
 
         applyUserTypeVisibility()
         loadMyProperties()
+    }
+
+    private fun loadUserName() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("Users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                val name = doc.getString("name") ?: "사용자"
+                binding.tvUserName.text = "$name 님의 마이페이지"
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "사용자 이름 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun applyUserTypeVisibility() {

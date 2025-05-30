@@ -107,9 +107,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             startLocationUpdates()
 
             loadPropertyMarkersFromFirestore()
-//            loadPropertyMarkers()
-
-//            loadMockMarkers()
         } else {
             requestLocationPermission()
         }
@@ -199,69 +196,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-
-
-    private fun loadMockMarkers() {
-        val mockProperties = listOf(
-            Property(
-                id = "1",
-                ownerId = "abc123",
-                title = "홍대 원룸",
-                description = "00빌라 1층",
-                address = "서울 마포구 신촌로 100",
-                price = "500/50",
-                startDate = "2025-07-01",
-                endDate = "2025-08-31",
-                imageUrl = "",
-                latitude = 37.559819,
-                longitude = 126.942308
-            ),
-            Property(
-                id = "2",
-                ownerId = "def456",
-                address = "서울 마포구 양화로 120",
-                title = "홍대 부근 원룸",
-                description = "",
-                price = "1000/70",
-                startDate = "2025-07-01",
-                endDate = "2025-08-01",
-                imageUrl = "",
-                latitude = 37.556081,
-                longitude = 126.922425
-            )
-        )
-
-        for (property in mockProperties) {
-            val position = LatLng(property.latitude, property.longitude)
-            mMap.addMarker(
-                MarkerOptions()
-                    .position(position)
-                    .title(property.title)
-                    .snippet("주소: ${property.address}\n" +
-                            "가격: ${property.price}\n" +
-                            "기간:${property.startDate} ~ ${property.endDate}")
-            )
-        }
-
-        mMap.setOnMarkerClickListener { marker ->
-            val matchedProperty = mockProperties.find {
-                it.latitude == marker.position.latitude && it.longitude == marker.position.longitude
-            }
-            if (matchedProperty != null) {
-                val bottomSheet = PropertyBottomSheet(matchedProperty)
-                bottomSheet.show(supportFragmentManager, bottomSheet.tag)
-            }
-            true
-        }
-
-    }
-
-    private fun hasLocationPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            this, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
     private fun requestLocationPermission() {
         ActivityCompat.requestPermissions(
             this,
@@ -329,28 +263,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             locationCallback,
             Looper.getMainLooper()
         )
-    }
-
-    private fun loadPropertyMarkers() {
-        db.collection("Properties")
-            .get()
-            .addOnSuccessListener { result ->
-                for (doc in result) {
-                    val property = doc.toObject(Property::class.java)
-                    if (property.latitude != 0.0 && property.longitude != 0.0) {
-                        val position = LatLng(property.latitude, property.longitude)
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .position(position)
-                                .title(property.address)
-                                .snippet("보증금: ${property.price}")
-                        )
-                    }
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "매물 정보를 불러올 수 없습니다", Toast.LENGTH_SHORT).show()
-            }
     }
 
     override fun onStop() {
