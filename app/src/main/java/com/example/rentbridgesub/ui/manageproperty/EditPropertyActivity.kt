@@ -1,6 +1,7 @@
 package com.example.rentbridgesub.ui.manageproperty
 
 import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -110,7 +111,12 @@ class EditPropertyActivity : AppCompatActivity() {
                 .delete()
                 .addOnSuccessListener {
                     Toast.makeText(this, "매물이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                    setResult(Activity.RESULT_OK)
+
+                    val resultIntent = Intent().apply {
+                        putExtra("deleted", true)
+                    }
+
+                    setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 }
                 .addOnFailureListener { e ->
@@ -144,8 +150,25 @@ class EditPropertyActivity : AppCompatActivity() {
                             "endDate" to endDate,
                             "imageUrl" to imageUrl
                         )
-                    )
-                    Toast.makeText(this, "매물이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                    ).addOnSuccessListener {
+                        Toast.makeText(this, "매물이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+
+                        // ✅ 여기 추가
+                        val updatedProperty = property.copy(
+                            title = title,
+                            description = desc,
+                            price = price,
+                            address = address,
+                            startDate = startDate,
+                            endDate = endDate,
+                            imageUrl = imageUrl
+                        )
+                        val resultIntent = Intent().apply {
+                            putExtra("updatedProperty", updatedProperty)
+                        }
+                        setResult(Activity.RESULT_OK, resultIntent)
+                        finish()
+                    }
                 } else {
                     Toast.makeText(this, "해당 ID의 문서를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
                 }
