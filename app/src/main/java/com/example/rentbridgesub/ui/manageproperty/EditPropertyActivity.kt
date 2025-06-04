@@ -84,6 +84,16 @@ class EditPropertyActivity : AppCompatActivity() {
                                 .show()
                         }
                 }
+            } else {
+                updateFirestoreProperty(
+                    updatedTitle,
+                    updatedDesc,
+                    updatedPrice,
+                    updatedAddress,
+                    updatedStartDate,
+                    updatedEndDate,
+                    property.imageUrl // 기존 이미지
+                )
             }
         }
     }
