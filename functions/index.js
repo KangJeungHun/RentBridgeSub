@@ -26,8 +26,19 @@ const axios = require("axios");
 
 admin.initializeApp();
 
-exports.registerProperty = functions.https.onRequest(async (req, res) => {
-  const { id, ownerId, title, description, address, price, startDate, endDate, imageUrl} = req.body;
+exports.registerProperty = functions.https.onRequest(async (req, res) =>{
+  const {
+  id,
+  ownerId,
+  title,
+  description,
+  address,
+  price,
+  startDate,
+  endDate,
+  imageUrl,
+  landlordPhone
+  } = req.body;
 
   try {
     const geoRes = await axios.get("https://dapi.kakao.com/v2/local/search/address.json", {
@@ -51,6 +62,7 @@ exports.registerProperty = functions.https.onRequest(async (req, res) => {
       startDate,
       endDate,
       imageUrl,
+      landlordPhone,
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude)
     };
@@ -63,3 +75,4 @@ exports.registerProperty = functions.https.onRequest(async (req, res) => {
     res.status(500).json({ error: "서버 오류 발생" });
   }
 });
+// 강제 배포를 위한 더미 주석

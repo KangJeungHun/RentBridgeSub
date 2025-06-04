@@ -57,6 +57,7 @@ class ManagePropertiesActivity : AppCompatActivity() {
                 propertyList.clear()
                 for (doc in result) {
                     val property = doc.toObject(Property::class.java)
+                    property.id = doc.id
                     propertyList.add(property)
                 }
                 adapter.notifyDataSetChanged()

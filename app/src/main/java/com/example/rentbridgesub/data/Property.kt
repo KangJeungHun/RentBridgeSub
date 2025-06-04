@@ -3,7 +3,7 @@ package com.example.rentbridgesub.data
 import java.io.Serializable
 
 data class Property(
-    val id: String = "",
+    var id: String = "",
     val ownerId: String = "",
     val title: String = "",         // 제목
     val description: String = "",   // 설명

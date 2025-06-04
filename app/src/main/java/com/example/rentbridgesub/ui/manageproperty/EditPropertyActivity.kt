@@ -61,7 +61,7 @@ class EditPropertyActivity : AppCompatActivity() {
         binding.etLandlordPhone.setText(property.landlordPhone)
 
         // 수정 버튼
-        binding.btnUpdate.setOnClickListener {
+        binding.btnSave.setOnClickListener {
             val updatedTitle = binding.etTitle.text.toString()
             val updatedDesc = binding.etDescription.text.toString()
             val updatedPrice = binding.etPrice.text.toString()
