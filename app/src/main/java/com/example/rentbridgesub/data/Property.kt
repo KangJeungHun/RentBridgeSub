@@ -14,5 +14,5 @@ data class Property(
     val imageUrl: String = "",      // 이미지 URL
     val latitude: Double = 0.0,     // 위도
     val longitude: Double = 0.0,     // 경도
-    val landlordPhone: String = ""
+    val landlordPhone: String = ""  //임대인 전화번호
 ) : Serializable
