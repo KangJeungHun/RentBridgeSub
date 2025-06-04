@@ -20,7 +20,6 @@ class EditPropertyActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditPropertyBinding
     private lateinit var property: Property
     private val db = FirebaseFirestore.getInstance()
-
     private var selectedImageUri: Uri? = null
     private val storage = FirebaseStorage.getInstance()
 
@@ -39,8 +38,7 @@ class EditPropertyActivity : AppCompatActivity() {
         property = intent.getSerializableExtra("property") as Property
         Log.d("EditActivity", "받은 property.id = ${property.id}")
 
-        // 기존 이미지 표시
-        if (!property.imageUrl.isNullOrEmpty()) {
+        if (property.imageUrl.isNotEmpty()) {
             Picasso.get()
                 .load(property.imageUrl)
                 .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
@@ -48,19 +46,19 @@ class EditPropertyActivity : AppCompatActivity() {
                 .into(binding.etImage)
         }
 
-        // 이미지 뷰 클릭 시 이미지 선택
         binding.etImage.setOnClickListener {
             imagePicker.launch("image/*")
         }
 
+        // 기존 데이터 설정
         binding.etTitle.setText(property.title)
         binding.etDescription.setText(property.description)
         binding.etPrice.setText(property.price)
         binding.etAddress.setText(property.address)
         binding.etStartDate.setText(property.startDate)
         binding.etEndDate.setText(property.endDate)
+        binding.etLandlordPhone.setText(property.landlordPhone) // ✅ 추가됨
 
-        // 수정 버튼
         binding.btnSave.setOnClickListener {
             val updatedTitle = binding.etTitle.text.toString()
             val updatedDesc = binding.etDescription.text.toString()
@@ -68,30 +66,28 @@ class EditPropertyActivity : AppCompatActivity() {
             val updatedAddress = binding.etAddress.text.toString()
             val updatedStartDate = binding.etStartDate.text.toString()
             val updatedEndDate = binding.etEndDate.text.toString()
+            val updatedLandlordPhone = binding.etLandlordPhone.text.toString()
 
             if (selectedImageUri != null) {
                 val fileRef = storage.reference.child("properties/${property.id}.jpg")
-
-                selectedImageUri?.let { uri ->
-                    fileRef.putFile(uri)
-                        .addOnSuccessListener {
-                            fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                                updateFirestoreProperty(
-                                    updatedTitle,
-                                    updatedDesc,
-                                    updatedPrice,
-                                    updatedAddress,
-                                    updatedStartDate,
-                                    updatedEndDate,
-                                    downloadUri.toString()
-                                )
-                            }
+                fileRef.putFile(selectedImageUri!!)
+                    .addOnSuccessListener {
+                        fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                            updateFirestoreProperty(
+                                updatedTitle,
+                                updatedDesc,
+                                updatedPrice,
+                                updatedAddress,
+                                updatedStartDate,
+                                updatedEndDate,
+                                downloadUri.toString(),
+                                updatedLandlordPhone
+                            )
                         }
-                        .addOnFailureListener {
-                            Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             } else {
                 updateFirestoreProperty(
                     updatedTitle,
@@ -100,28 +96,26 @@ class EditPropertyActivity : AppCompatActivity() {
                     updatedAddress,
                     updatedStartDate,
                     updatedEndDate,
-                    property.imageUrl // 기존 이미지
+                    property.imageUrl,
+                    updatedLandlordPhone
                 )
             }
         }
 
-        // 삭제 버튼 클릭 시
         binding.btnDelete.setOnClickListener {
             db.collection("Properties")
                 .document(property.id)
                 .delete()
                 .addOnSuccessListener {
                     Toast.makeText(this, "매물이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-
                     val resultIntent = Intent().apply {
                         putExtra("deleted", true)
                     }
-
                     setResult(Activity.RESULT_OK, resultIntent)
                     finish()
                 }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener {
+                    Toast.makeText(this, "삭제 실패: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
         }
     }
@@ -133,48 +127,32 @@ class EditPropertyActivity : AppCompatActivity() {
         address: String,
         startDate: String,
         endDate: String,
-        imageUrl: String
+        imageUrl: String,
+        landlordPhone: String
     ) {
-        db.collection("Properties")
-            .whereEqualTo("id", property.id)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    val docRef = querySnapshot.documents[0].reference
-                    docRef.update(
-                        mapOf(
-                            "title" to title,
-                            "description" to desc,
-                            "price" to price,
-                            "address" to address,
-                            "startDate" to startDate,
-                            "endDate" to endDate,
-                            "imageUrl" to imageUrl
-                        )
-                    ).addOnSuccessListener {
-                        Toast.makeText(this, "매물이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+        val updatedProperty = property.copy(
+            title = title,
+            description = desc,
+            price = price,
+            address = address,
+            startDate = startDate,
+            endDate = endDate,
+            imageUrl = imageUrl,
+            landlordPhone = landlordPhone
+        )
 
-                        val updatedProperty = property.copy(
-                            title = title,
-                            description = desc,
-                            price = price,
-                            address = address,
-                            startDate = startDate,
-                            endDate = endDate,
-                            imageUrl = imageUrl
-                        )
-                        val resultIntent = Intent().apply {
-                            putExtra("updatedProperty", updatedProperty)
-                        }
-                        setResult(Activity.RESULT_OK, resultIntent)
-                        finish()
-                    }
-                } else {
-                    Toast.makeText(this, "해당 ID의 문서를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+        db.collection("Properties")
+            .document(property.id)
+            .set(updatedProperty)
+            .addOnSuccessListener {
+                Toast.makeText(this, "매물이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                val resultIntent = Intent().apply {
+                    putExtra("updatedProperty", updatedProperty)
                 }
+                setResult(Activity.RESULT_OK, resultIntent)
+                finish()
             }
             .addOnFailureListener {
-                Log.e("FirestoreUpdate", "수정 실패", it)
                 Toast.makeText(this, "수정 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
