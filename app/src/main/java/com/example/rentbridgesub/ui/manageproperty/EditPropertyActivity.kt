@@ -12,6 +12,8 @@ import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityEditPropertyBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.squareup.picasso.MemoryPolicy
+import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 
 class EditPropertyActivity : AppCompatActivity() {
@@ -43,7 +45,11 @@ class EditPropertyActivity : AppCompatActivity() {
 
         // 기존 이미지 표시
         if (!property.imageUrl.isNullOrEmpty()) {
-            Picasso.get().load(property.imageUrl).into(binding.etImage)
+            Picasso.get()
+                .load(property.imageUrl)
+                .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                .networkPolicy(NetworkPolicy.NO_CACHE, NetworkPolicy.NO_STORE)
+                .into(binding.etImage)
         }
 
         // 이미지 뷰 클릭 시 이미지 선택
