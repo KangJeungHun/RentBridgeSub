@@ -15,15 +15,27 @@ class ChatListActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val chatUserList = mutableListOf<Pair<String, String>>() // (상대방UID, 이름)
     private lateinit var adapter: ChatListAdapter
+    private var isSublessor: Boolean = false
+    private var isSublessee: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("Users").document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                isSublessor = document.getString("type") == "sublessor"
+                isSublessee = document.getString("type") == "sublessee"
+            }
+
         adapter = ChatListAdapter(chatUserList) { userId ->
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("receiverId", userId)
+            intent.putExtra("isSublessor", isSublessor)
+            intent.putExtra("isSublessee", isSublessee)
             startActivity(intent)
         }
 
@@ -39,8 +51,6 @@ class ChatListActivity : AppCompatActivity() {
         db.collection("ChatRooms")
             .get()
             .addOnSuccessListener { snapshot ->
-                println("불러온 ChatRooms document 개수: ${snapshot.documents.size}")
-
                 val otherUserIds = mutableSetOf<String>()
 
                 for (doc in snapshot.documents) {
@@ -56,8 +66,6 @@ class ChatListActivity : AppCompatActivity() {
                     }
                 }
 
-                println("찾은 상대방 UID 개수: ${otherUserIds.size}")
-
                 if (otherUserIds.isEmpty()) {
                     chatUserList.clear()
                     adapter.notifyDataSetChanged()
@@ -68,8 +76,6 @@ class ChatListActivity : AppCompatActivity() {
                     .whereIn("uid", otherUserIds.toList())
                     .get()
                     .addOnSuccessListener { usersSnapshot ->
-                        println("Users 컬렉션에서 가져온 사용자 수: ${usersSnapshot.size()}")
-
                         chatUserList.clear()
                         for (doc in usersSnapshot.documents) {
                             val uid = doc.getString("uid") ?: continue
