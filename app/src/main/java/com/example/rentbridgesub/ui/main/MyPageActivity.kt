@@ -1,11 +1,16 @@
 package com.example.rentbridgesub.ui.main
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.telephony.SmsManager
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
@@ -24,6 +29,7 @@ class MyPageActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val propertyList = mutableListOf<Property>()
     private lateinit var adapter: PropertyAdapter
+    private val SMS_PERMISSION_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +68,10 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.btnContactLandlord.setOnClickListener {
+            checkSmsPermissionAndSend()
+        }
+
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
@@ -93,12 +103,13 @@ class MyPageActivity : AppCompatActivity() {
                 val userType = doc.getString("userType")
                 when (userType) {
                     "sublessor" -> {
-                        // 전대인: 찜한 매물 버튼 제거
                         binding.btnMyFavorites.visibility = View.GONE
+                        binding.btnContactLandlord.visibility = View.VISIBLE
                     }
+
                     "sublessee" -> {
-                        // 전차인: 내 매물 관리 버튼 제거
                         binding.btnManageMyProperties.visibility = View.GONE
+                        binding.btnContactLandlord.visibility = View.GONE
                     }
                 }
             }
@@ -123,12 +134,77 @@ class MyPageActivity : AppCompatActivity() {
             }
     }
 
-    override fun onBackPressed() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("앱 종료")
-            .setMessage("앱을 종료하시겠습니까?")
-            .setPositiveButton("예") { _, _ -> finishAffinity() }
-            .setNegativeButton("아니요", null)
-            .show()
+    private fun checkSmsPermissionAndSend() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.SEND_SMS),
+                SMS_PERMISSION_CODE
+            )
+        } else {
+            sendConsentSmsToLandlord()
+        }
+    }
+
+    private fun sendConsentSmsToLandlord() {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        db.collection("Properties")
+            .whereEqualTo("ownerId", currentUserId)
+            .get()
+            .addOnSuccessListener { result ->
+                if (result.isEmpty) {
+                    Toast.makeText(this, "등록된 매물이 없습니다.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+
+                for (doc in result) {
+                    val property = doc.toObject(Property::class.java)
+                    val rawPhone = property.landlordPhone?.trim()
+                    val landlordPhone = rawPhone?.replace("-", "")
+
+                    if (landlordPhone.isNullOrBlank() || !landlordPhone.matches(Regex("^\\+?\\d{10,15}$"))) {
+                        Toast.makeText(this, "유효한 임대인 전화번호가 없습니다: $rawPhone", Toast.LENGTH_SHORT).show()
+                        continue
+                    }
+
+                    val message = """
+                    [렌트브릿지] 계약서 검토 요청
+                    매물 제목: ${property.title}
+                    주소: ${property.address}
+                    전대인: ${auth.currentUser?.email}
+                    계약서 파일을 참고해주세요.
+                """.trimIndent()
+
+                    try {
+                        SmsManager.getDefault().sendTextMessage(landlordPhone, null, message, null, null)
+                        Toast.makeText(this, "임대인에게 문자 전송 완료", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "SMS 전송 실패: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "매물 정보 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == SMS_PERMISSION_CODE &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            sendConsentSmsToLandlord()
+        } else {
+            Toast.makeText(this, "SMS 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
     }
 }

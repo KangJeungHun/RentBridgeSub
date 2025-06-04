@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.property
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -42,17 +43,29 @@ class AddPropertyActivity : AppCompatActivity() {
             val price = binding.etPrice.text.toString()
             val startDate = binding.etStartDate.text.toString()
             val endDate = binding.etEndDate.text.toString()
+            val landlordPhone = binding.etLandlordPhone.text.toString()
 
             if (title.isNotEmpty() && description.isNotEmpty() &&
                 price.isNotEmpty() && address.isNotEmpty() &&
-                startDate.isNotEmpty() && endDate.isNotEmpty()) {
+                startDate.isNotEmpty() && endDate.isNotEmpty() &&
+                landlordPhone.isNotEmpty()) {
 
                 if (selectedImageUri == null) {
-//                    uploadImageAndRegister(title, description, address, price, startDate, endDate)
-                    Toast.makeText(this, "이미지를 선택하세요", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+                    // 이미지 없이 등록
+                    callRegisterPropertyFunction(
+                        UUID.randomUUID().toString(),
+                        title,
+                        description,
+                        address,
+                        price,
+                        startDate,
+                        endDate,
+                        "", // imageUrl을 빈 문자열로 명시
+                        landlordPhone
+                    )
                 } else {
-                    uploadImageAndRegister(title, description, address, price, startDate, endDate)
+                    // 이미지 업로드 후 등록
+                    uploadImageAndRegister(title, description, address, price, startDate, endDate, landlordPhone)
                 }
             } else {
                 Toast.makeText(this, "모든 정보를 입력하세요", Toast.LENGTH_SHORT).show()
@@ -66,7 +79,8 @@ class AddPropertyActivity : AppCompatActivity() {
         address: String,
         price: String,
         startDate: String,
-        endDate: String
+        endDate: String,
+        landlordPhone: String
     ) {
         val propertyId = UUID.randomUUID().toString()
         val storageRef = storage.reference.child("properties/$propertyId.jpg")
@@ -83,7 +97,8 @@ class AddPropertyActivity : AppCompatActivity() {
                             price,
                             startDate,
                             endDate,
-                            downloadUrl.toString()
+                            downloadUrl.toString(),
+                            landlordPhone
                         )
                     }
                 }
@@ -101,7 +116,8 @@ class AddPropertyActivity : AppCompatActivity() {
         price: String,
         startDate: String,
         endDate: String,
-        imageUrl: String
+        imageUrl: String,
+        landlordPhone: String
     ) {
         val json = JSONObject().apply {
             put("id", propertyId)
@@ -112,8 +128,10 @@ class AddPropertyActivity : AppCompatActivity() {
             put("price", price)
             put("startDate", startDate)
             put("endDate", endDate)
-            put("imageUrl", imageUrl)
+            put("imageUrl", imageUrl) // 항상 명시
+            put("landlordPhone", landlordPhone)
         }
+        Log.d("RegisterProperty", "보내는 JSON 데이터: $json")
 
         val url = "https://us-central1-rentbridgesub.cloudfunctions.net/registerProperty"
 
@@ -126,6 +144,7 @@ class AddPropertyActivity : AppCompatActivity() {
                 finish()
             },
             { error ->
+                Log.e("RegisterProperty", "에러 상세: ${error.networkResponse?.statusCode} / ${error.message}")
                 Toast.makeText(this, "오류: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         )

@@ -1,5 +1,7 @@
 package com.example.rentbridgesub.ui.manageproperty
 
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,25 +16,28 @@ import com.squareup.picasso.Picasso
 
 class EditPropertyActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditPropertyBinding
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var storage: FirebaseStorage
     private lateinit var property: Property
-    private val db = FirebaseFirestore.getInstance()
-
     private var selectedImageUri: Uri? = null
-    private val storage = FirebaseStorage.getInstance()
 
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            selectedImageUri = uri
-            binding.etImage.setImageURI(uri)
+            uri?.let {
+                selectedImageUri = it
+                binding.etImage.setImageURI(it)
+            }
         }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditPropertyBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        @Suppress("DEPRECATION")
+        firestore = FirebaseFirestore.getInstance()
+        storage = FirebaseStorage.getInstance()
+
+        // 받아온 Property 객체
         property = intent.getSerializableExtra("property") as Property
         Log.d("EditActivity", "받은 property.id = ${property.id}")
 
@@ -46,13 +51,16 @@ class EditPropertyActivity : AppCompatActivity() {
             imagePicker.launch("image/*")
         }
 
+        // 기존 정보 세팅
         binding.etTitle.setText(property.title)
         binding.etDescription.setText(property.description)
-        binding.etPrice.setText(property.price)
         binding.etAddress.setText(property.address)
+        binding.etPrice.setText(property.price)
         binding.etStartDate.setText(property.startDate)
         binding.etEndDate.setText(property.endDate)
+        binding.etLandlordPhone.setText(property.landlordPhone)
 
+        // 수정 버튼
         binding.btnUpdate.setOnClickListener {
             val updatedTitle = binding.etTitle.text.toString()
             val updatedDesc = binding.etDescription.text.toString()
@@ -60,30 +68,29 @@ class EditPropertyActivity : AppCompatActivity() {
             val updatedAddress = binding.etAddress.text.toString()
             val updatedStartDate = binding.etStartDate.text.toString()
             val updatedEndDate = binding.etEndDate.text.toString()
+            val updatedLandlordPhone = binding.etLandlordPhone.text.toString()
 
             if (selectedImageUri != null) {
                 val fileRef = storage.reference.child("properties/${property.id}.jpg")
 
-                selectedImageUri?.let { uri ->
-                    fileRef.putFile(uri)
-                        .addOnSuccessListener {
-                            fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                                updateFirestoreProperty(
-                                    updatedTitle,
-                                    updatedDesc,
-                                    updatedPrice,
-                                    updatedAddress,
-                                    updatedStartDate,
-                                    updatedEndDate,
-                                    downloadUri.toString()
-                                )
-                            }
+                fileRef.putFile(selectedImageUri!!)
+                    .addOnSuccessListener {
+                        fileRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                            updateFirestoreProperty(
+                                updatedTitle,
+                                updatedDesc,
+                                updatedPrice,
+                                updatedAddress,
+                                updatedStartDate,
+                                updatedEndDate,
+                                downloadUri.toString(),
+                                updatedLandlordPhone
+                            )
                         }
-                        .addOnFailureListener {
-                            Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "사진 업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+                    }
             } else {
                 updateFirestoreProperty(
                     updatedTitle,
@@ -92,9 +99,25 @@ class EditPropertyActivity : AppCompatActivity() {
                     updatedAddress,
                     updatedStartDate,
                     updatedEndDate,
-                    property.imageUrl // 기존 이미지
+                    property.imageUrl,
+                    updatedLandlordPhone
                 )
             }
+        }
+
+        // 삭제 버튼
+        binding.btnDelete.setOnClickListener {
+            firestore.collection("Properties")
+                .document(property.id)
+                .delete()
+                .addOnSuccessListener {
+                    Toast.makeText(this, "매물이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
@@ -105,33 +128,33 @@ class EditPropertyActivity : AppCompatActivity() {
         address: String,
         startDate: String,
         endDate: String,
-        imageUrl: String
+        imageUrl: String,
+        landlordPhone: String
     ) {
-        db.collection("Properties")
-            .whereEqualTo("id", property.id)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    val docRef = querySnapshot.documents[0].reference
-                    docRef.update(
-                        mapOf(
-                            "title" to title,
-                            "description" to desc,
-                            "price" to price,
-                            "address" to address,
-                            "startDate" to startDate,
-                            "endDate" to endDate,
-                            "imageUrl" to imageUrl
-                        )
-                    )
-                    Toast.makeText(this, "수정 완료", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "해당 ID의 문서를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+        val updatedProperty = property.copy(
+            title = title,
+            description = desc,
+            price = price,
+            address = address,
+            startDate = startDate,
+            endDate = endDate,
+            imageUrl = imageUrl,
+            landlordPhone = landlordPhone
+        )
+
+        firestore.collection("Properties")
+            .document(property.id)
+            .set(updatedProperty)
+            .addOnSuccessListener {
+                Toast.makeText(this, "매물이 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                val resultIntent = Intent().apply {
+                    putExtra("updatedProperty", updatedProperty)
                 }
+                setResult(Activity.RESULT_OK, resultIntent)
+                finish()
             }
-            .addOnFailureListener {
-                Log.e("FirestoreUpdate", "수정 실패", it)
-                Toast.makeText(this, "수정 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "수정 실패: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }

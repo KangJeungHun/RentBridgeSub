@@ -3,6 +3,7 @@ package com.example.rentbridgesub.ui.manageproperty
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.rentbridgesub.data.Property
@@ -17,6 +18,19 @@ class ManagePropertiesActivity : AppCompatActivity() {
     private val propertyList = mutableListOf<Property>()
     private lateinit var adapter: ManagePropertyAdapter
 
+    // 새로 추가: 결과를 받아오기 위한 런처
+    private val editPropertyLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // 삭제되었으면 리스트 새로고침
+        if (result.resultCode == RESULT_OK) {
+            val isDeleted = result.data?.getBooleanExtra("deleted", false) ?: false
+            if (isDeleted) {
+                loadMyProperties()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityManagePropertiesBinding.inflate(layoutInflater)
@@ -25,7 +39,7 @@ class ManagePropertiesActivity : AppCompatActivity() {
         adapter = ManagePropertyAdapter(propertyList) { property ->
             val intent = Intent(this, EditPropertyActivity::class.java)
             intent.putExtra("property", property)
-            startActivity(intent)
+            editPropertyLauncher.launch(intent) // 여기 변경!
         }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)

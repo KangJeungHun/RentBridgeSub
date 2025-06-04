@@ -67,13 +67,29 @@
                 android:hint="종료일 (예: 2025-08-31)"
                 android:layout_marginTop="8dp" />
 
+            <EditText
+                android:id="@+id/etLandlordPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="임대인 전화번호"
+                android:inputType="phone"
+                android:layout_marginTop="8dp" />
 
             <Button
-                android:id="@+id/btnUpdate"
+                android:id="@+id/btnSave"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="수정 저장"
                 android:layout_marginTop="16dp" />
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="매물 삭제"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/red"
+                android:textColor="@android:color/white" />
 
         </LinearLayout>
     </ScrollView>
