@@ -45,6 +45,8 @@
         <activity android:name=".ui.editprofile.EditProfileActivity" />
         <activity android:name=".ui.manageproperty.ManagePropertiesActivity"/>
         <activity android:name=".ui.manageproperty.EditPropertyActivity"/>
+        <activity android:name=".ui.chat.FullImageActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
 
 

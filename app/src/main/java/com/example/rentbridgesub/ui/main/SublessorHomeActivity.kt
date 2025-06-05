@@ -3,11 +3,13 @@ package com.example.rentbridgesub.ui.main
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
@@ -71,6 +73,8 @@ class SublessorHomeActivity : AppCompatActivity() {
     }
 
     private fun loadLatestProperty(uid: String, titleView: TextView, addressView: TextView, priceView: TextView) {
+        val imageView = findViewById<ImageView>(R.id.imgProperty)
+
         FirebaseFirestore.getInstance().collection("Properties")
             .whereEqualTo("ownerId", uid)
             .limit(1)
@@ -81,6 +85,16 @@ class SublessorHomeActivity : AppCompatActivity() {
                     titleView.text = property.getString("title") ?: "제목 없음"
                     addressView.text = property.getString("address") ?: "주소 없음"
                     priceView.text = property.getString("price") ?: "가격 정보 없음"
+
+                    val imageUrl = property.getString("imageUrl")
+                    if (!imageUrl.isNullOrEmpty()) {
+                        Glide.with(this)
+                            .load(imageUrl)
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(imageView)
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_placeholder)
+                    }
                 } else {
                     titleView.text = "등록된 매물이 없습니다"
                     addressView.text = ""

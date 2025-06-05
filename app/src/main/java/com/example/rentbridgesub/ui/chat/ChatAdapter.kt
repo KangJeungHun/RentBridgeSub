@@ -89,7 +89,11 @@ class ChatAdapter(
             }
         }
 
+        holder.binding.ivImage.setOnClickListener {
+            val intent = Intent(holder.itemView.context, FullImageActivity::class.java)
+            intent.putExtra("imageUrl", message.imageUrl)
+            holder.itemView.context.startActivity(intent)
+        }
     }
-
     override fun getItemCount(): Int = messageList.size
 }
