@@ -27,22 +27,21 @@ class ChatListActivity : AppCompatActivity() {
         db.collection("Users").document(uid)
             .get()
             .addOnSuccessListener { document ->
-                isSublessor = document.getString("type") == "sublessor"
-                isSublessee = document.getString("type") == "sublessee"
-            }
+                isSublessor = document.getString("userType") == "sublessor"
+                isSublessee = document.getString("userType") == "sublessee"
 
-        adapter = ChatListAdapter(chatUserList) { userId ->
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("receiverId", userId)
-            intent.putExtra("isSublessor", isSublessor)
-            intent.putExtra("isSublessee", isSublessee)
-            startActivity(intent)
+                adapter = ChatListAdapter(chatUserList) { userId ->
+                    val intent = Intent(this, ChatActivity::class.java)
+                    intent.putExtra("receiverId", userId)
+                    intent.putExtra("isSublessor", isSublessor)
+                    intent.putExtra("isSublessee", isSublessee)
+                    startActivity(intent)
+                }
+                binding.recyclerViewChatList.layoutManager = LinearLayoutManager(this)
+                binding.recyclerViewChatList.adapter = adapter
+
+                loadChatUsers()
         }
-
-        binding.recyclerViewChatList.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewChatList.adapter = adapter
-
-        loadChatUsers()
     }
 
     private fun loadChatUsers() {

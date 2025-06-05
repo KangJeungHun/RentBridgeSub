@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.chat
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -65,6 +66,8 @@ class ChatActivity : AppCompatActivity() {
         binding.btnSendContract.setOnClickListener { sendContractMessage() }
 
         binding.contractLayout.visibility = View.GONE
+        Log.d("ChatCheck", "isSublessor: $isSublessor, isSublessee: $isSublessee")
+
         loadMessages()
     }
 

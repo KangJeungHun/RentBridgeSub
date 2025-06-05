@@ -1,10 +1,15 @@
 package com.example.rentbridgesub.ui.chat
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rentbridgesub.R
@@ -58,6 +63,32 @@ class ChatAdapter(
             holder.binding.tvMessage.setBackgroundResource(R.drawable.bg_message_received)
             holder.binding.tvMessage.setTextColor(ContextCompat.getColor(holder.itemView.context, android.R.color.black))
         }
+
+        holder.binding.tvMessage.setOnClickListener {
+            val url = message.imageUrl
+            val extension = MimeTypeMap.getFileExtensionFromUrl(url)
+
+            Log.d("Url", "PDFurl: $url")
+
+            if (url.isNotEmpty()) {
+                if (extension == "pdf") {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(Uri.parse(url), "application/pdf")
+                        flags = Intent.FLAG_ACTIVITY_NO_HISTORY or
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                                Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    try {
+                        holder.itemView.context.startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(holder.itemView.context, "PDF를 열 수 있는 앱이 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(holder.itemView.context, "이미지 클릭 처리 미구현", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
     }
 
     override fun getItemCount(): Int = messageList.size
