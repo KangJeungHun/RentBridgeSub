@@ -35,7 +35,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
-    <EditText
+    <com.google.android.material.textfield.MaterialAutoCompleteTextView
         android:id="@+id/etAddress"
         android:hint="주소"
         android:layout_width="0dp"

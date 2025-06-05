@@ -1,8 +1,11 @@
 package com.example.rentbridgesub.ui.property
 
+import android.R
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -10,9 +13,11 @@ import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.rentbridgesub.databinding.ActivityAddPropertyBinding
+import com.example.rentbridgesub.ui.WebView.WebViewActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.util.UUID
 
 class AddPropertyActivity : AppCompatActivity() {
@@ -27,6 +32,16 @@ class AddPropertyActivity : AppCompatActivity() {
         binding.ivProperty.setImageURI(uri)
     }
 
+    private val addressLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val address = result.data?.getStringExtra("selectedAddress")
+            Log.d("AddPropertyActivity", "받은 주소: $address")  // ✅ 결과 수신 로그
+            binding.etAddress.setText(address)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddPropertyBinding.inflate(layoutInflater)
@@ -34,6 +49,10 @@ class AddPropertyActivity : AppCompatActivity() {
 
         binding.ivProperty.setOnClickListener {
             imagePicker.launch("image/*")
+        }
+
+        binding.etAddress.setOnClickListener {
+            addressLauncher.launch(Intent(this, WebViewActivity::class.java))
         }
 
         binding.btnRegister.setOnClickListener {
