@@ -5,6 +5,8 @@ data class ChatMessage(
     val receiverId: String = "",
     val message: String = "",
     val imageUrl: String = "",
+    val fileUrl: String = "",
+    val fileName: String = "",
     val timestamp: Long = 0,
     val type: String = "text"  // "text", "image", "contract"
 )

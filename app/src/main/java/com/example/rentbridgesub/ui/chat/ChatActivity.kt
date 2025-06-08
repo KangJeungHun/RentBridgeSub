@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.chat
 
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -35,6 +36,12 @@ class ChatActivity : AppCompatActivity() {
             uri?.let { uploadImage(it) }
         }
 
+    // 1) 파일 선택용 launcher 추가
+    private val filePicker =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { uploadFile(it) }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
@@ -63,6 +70,8 @@ class ChatActivity : AppCompatActivity() {
 
         binding.btnSend.setOnClickListener { sendMessage() }
         binding.btnImage.setOnClickListener { imagePicker.launch("image/*") }
+        // 2) 채팅 입력창 옆에 “파일” 버튼(OnClickListener)에 연결
+        binding.btnFile.setOnClickListener { filePicker.launch("*/*") }
         binding.btnSendContract.setOnClickListener { sendContractMessage() }
 
         binding.contractLayout.visibility = View.GONE
@@ -140,6 +149,44 @@ class ChatActivity : AppCompatActivity() {
             }
             .addOnFailureListener {
                 Toast.makeText(this, "이미지 전송 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // 3) 업로드 함수 (이미지 업로드와 거의 동일)
+    private fun uploadFile(uri: Uri) {
+        // 실제 디스플레이 이름 가져오기
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        val nameIndex = cursor?.getColumnIndex(OpenableColumns.DISPLAY_NAME) ?: -1
+        cursor?.moveToFirst()
+        val originalName = if (nameIndex >= 0) cursor!!.getString(nameIndex) else uri.lastPathSegment!!
+        cursor?.close()
+
+        val fileName = "chat_files/${System.currentTimeMillis()}_$originalName"
+        val ref = storage.reference.child(fileName)
+
+        ref.putFile(uri)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) throw task.exception!!
+                ref.downloadUrl
+            }
+            .addOnSuccessListener { downloadUri ->
+                // 4) 채팅 메시지에 파일 URL과 함께 전송
+                val message = ChatMessage(
+                    senderId    = senderId,
+                    receiverId  = receiverId,
+                    message     = "[파일] ${uri.lastPathSegment}",
+                    imageUrl    = "",               // 이미지 대신
+                    fileUrl     = downloadUri.toString(),
+                    fileName    = originalName,
+                    timestamp   = System.currentTimeMillis()
+                )
+                db.collection("ChatRooms")
+                    .document(chatRoomId)
+                    .collection("Messages")
+                    .add(message)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "파일 전송 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 

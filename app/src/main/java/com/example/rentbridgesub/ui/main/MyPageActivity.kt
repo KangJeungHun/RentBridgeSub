@@ -1,11 +1,16 @@
 package com.example.rentbridgesub.ui.main
 
 import android.Manifest
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.telephony.SmsManager
 import android.view.View
+import android.webkit.WebView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,10 +26,13 @@ import com.example.rentbridgesub.ui.editprofile.EditProfileActivity
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.net.URLEncoder
 
 class MyPageActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMyPageBinding
+    private lateinit var storage: FirebaseStorage
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private val propertyList = mutableListOf<Property>()
@@ -66,6 +74,12 @@ class MyPageActivity : AppCompatActivity() {
         binding.btnManageMyProperties.setOnClickListener {
             val intent = Intent(this, ManagePropertiesActivity::class.java)
             startActivity(intent)
+        }
+
+        storage = FirebaseStorage.getInstance()
+
+        binding.btnViewContract.setOnClickListener {
+            downloadContractPdf()
         }
 
         binding.btnContactLandlord.setOnClickListener {
@@ -146,6 +160,32 @@ class MyPageActivity : AppCompatActivity() {
         } else {
             sendConsentSmsToLandlord()
         }
+    }
+
+    private fun downloadContractPdf() {
+        val pdfRef = storage.reference.child("templates/contract.pdf")
+        pdfRef.downloadUrl
+            .addOnSuccessListener { uri ->
+                val url = uri.toString()
+                val request = DownloadManager.Request(Uri.parse(url))
+                    .setTitle("전대차_계약서.pdf")
+                    .setDescription("계약서 파일을 다운로드합니다")
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_DOWNLOADS,
+                        "전대차_계약서.pdf"
+                    )
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(false)
+
+                val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                dm.enqueue(request)
+
+                Toast.makeText(this, "다운로드를 시작했습니다. 알림을 확인하세요.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "계약서를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun sendConsentSmsToLandlord() {

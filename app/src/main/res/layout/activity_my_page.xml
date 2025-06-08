@@ -60,6 +60,13 @@
                 android:layout_marginBottom="12dp" />
 
             <Button
+                android:id="@+id/btnViewContract"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="전대차 계약서 다운로드"
+                android:layout_marginBottom="12dp" />
+
+            <Button
                 android:id="@+id/btnContactLandlord"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
