@@ -33,7 +33,7 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.tvTitle.text = property.title
-        binding.tvAddress.text = property.address
+        binding.tvAddress.text = property.addressMain + ' ' + property.addressDetail
         binding.tvPrice.text = property.price
         binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
         binding.tvDescription.text = property.description

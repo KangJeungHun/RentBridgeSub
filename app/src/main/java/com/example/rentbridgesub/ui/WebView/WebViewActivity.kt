@@ -1,6 +1,7 @@
 package com.example.rentbridgesub.ui.WebView
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,61 +13,55 @@ import android.webkit.*
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.webkit.WebViewAssetLoader
 import com.example.rentbridgesub.R
 
 class WebViewActivity : AppCompatActivity() {
+
+    private lateinit var webViewClientImpl: WebViewClient
+    private lateinit var webChromeClientImpl: WebChromeClient
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_webview)
 
-        // 1) WebView 레퍼런스 가져오기
-        val webView: WebView = findViewById(R.id.webView)
+        // 0) WebViewAssetLoader 세팅 (assets/ 폴더를 앱 내부 URL로 매핑)
+        //
+        val assetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler(
+                "/assets/",
+                WebViewAssetLoader.AssetsPathHandler(this)
+            )
+            .build()
 
-        // 2) WebSettings 설정
-        val settings = webView.settings
-        settings.javaScriptEnabled = true
-        settings.domStorageEnabled = true
-        settings.javaScriptCanOpenWindowsAutomatically = true
-        settings.setSupportMultipleWindows(true)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            settings.allowFileAccessFromFileURLs = true
-            settings.allowUniversalAccessFromFileURLs = true
-        }
-
-        // 3) WebViewClient / WebChromeClient 설정
-        webView.webViewClient = object : WebViewClient() {
-            override fun onReceivedError(
-                view: WebView?,
-                request: WebResourceRequest?,
-                error: WebResourceError?
-            ) {
-                super.onReceivedError(view, request, error)
-                Log.e(
-                    "WebViewError",
-                    "url=${request?.url} / errCode=${error?.errorCode} / desc=${error?.description}"
-                )
+        // 2) WebViewClient 구현체
+        webViewClientImpl = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                // assetLoader 가 assets/ 요청 처리
+                assetLoader.shouldInterceptRequest(request.url)
+                    ?.let { return it }
+                return super.shouldInterceptRequest(view, request)
             }
-
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 Log.d("WebViewDebug", "pageFinished: $url")
             }
+            override fun onReceivedError(view: WebView, req: WebResourceRequest, err: WebResourceError) {
+                super.onReceivedError(view, req, err)
+                Log.e("WebViewError", "url=${req.url} err=${err.errorCode}/${err.description}")
+            }
         }
 
-        webView.webChromeClient = object : WebChromeClient() {
-            // 팝업을 처리하기 위해 onCreateWindow를 오버라이드
+        // 3) WebChromeClient 구현체 (팝업 처리 포함)
+        webChromeClientImpl = object : WebChromeClient() {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onCreateWindow(
-                view: WebView?,
-                isDialog: Boolean,
-                isUserGesture: Boolean,
-                resultMsg: Message?
+                view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message
             ): Boolean {
-                // 1) 팝업 전용 WebView를 동적으로 생성
                 val popupContainer = findViewById<FrameLayout>(R.id.webview_popup_container)
                 popupContainer.visibility = View.VISIBLE
 
@@ -75,38 +70,68 @@ class WebViewActivity : AppCompatActivity() {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    webViewClient   = view?.webViewClient!!
-                    webChromeClient = view?.webChromeClient
-                    requestFocus()  // 포커스를 팝업 WebView로 넘긴다
+                    settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        javaScriptCanOpenWindowsAutomatically = true
+                        setSupportMultipleWindows(true)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                            allowFileAccessFromFileURLs = true
+                            allowUniversalAccessFromFileURLs = true
+                        }
+                    }
+                    webViewClient   = webViewClientImpl
+                    webChromeClient = webChromeClientImpl
+                    addJavascriptInterface(AndroidBridge(this@WebViewActivity), "Android")
+                    requestFocus()
                 }
 
-                // 2) 실제 레이아웃에 붙인다
                 popupContainer.addView(newWebView)
-
-                // 3) Transport로 webView 넘겨줌
-                val transport = (resultMsg?.obj as? WebView.WebViewTransport)
-                transport?.webView = newWebView
-                resultMsg?.sendToTarget()
+                (resultMsg.obj as? WebView.WebViewTransport)?.let {
+                    it.webView = newWebView
+                    resultMsg.sendToTarget()
+                }
                 return true
+            }
+
+            override fun onCloseWindow(window: WebView) {
+                // 팝업 닫힐 때 컨테이너 정리
+                findViewById<FrameLayout>(R.id.webview_popup_container).apply {
+                    removeAllViews()
+                    visibility = View.GONE
+                }
             }
         }
 
-        // 4) JavaScript 인터페이스 등록
-        webView.addJavascriptInterface(object {
-            @JavascriptInterface
-            fun processDATA(data: String) {
-                // 사용자가 주소를 선택하면 호출되는 콜백
-                Log.d("WebViewActivity", "JS에서 받은 주소: $data")  // ✅ Android 로그
-                val intent = Intent()
-                intent.putExtra("selectedAddress", data)
-                setResult(RESULT_OK, intent)
-                finish()
+        // 4) 실제 WebView에 세팅
+        val webView: WebView = findViewById(R.id.webView)
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            javaScriptCanOpenWindowsAutomatically = true
+            setSupportMultipleWindows(true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                allowFileAccessFromFileURLs = true
+                allowUniversalAccessFromFileURLs = true
             }
-        }, "Android")
+        }
+        webView.webViewClient = webViewClientImpl
+        webView.webChromeClient = webChromeClientImpl
+        webView.addJavascriptInterface(AndroidBridge(this), "Android")
 
-        // 5) assets 폴더 안에 있는 HTML 로드
-        webView.loadUrl("file:///android_asset/postcode.html")
+        // 5) HTML 로드
+        webView.loadUrl("https://appassets.androidplatform.net/assets/postcode.html")
+    }
+
+    class AndroidBridge(private val activity: Activity) {
+        // 반드시 android.webkit.JavascriptInterface 로 임포트
+        @JavascriptInterface
+        fun processDATA(data: String) {
+            Log.d("WebViewActivity", "JS에서 받은 주소: $data")
+            activity.setResult(Activity.RESULT_OK, Intent().putExtra("selectedAddress", data))
+            activity.finish()
+        }
     }
 }

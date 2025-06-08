@@ -32,7 +32,8 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
   ownerId,
   title,
   description,
-  address,
+  addressMain,
+  addressDetail,
   price,
   startDate,
   endDate,
@@ -40,10 +41,12 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
   landlordPhone
   } = req.body;
 
+  const fullAddress = `${addressMain} ${addressDetail}`;
+
   try {
     const geoRes = await axios.get("https://dapi.kakao.com/v2/local/search/address.json", {
       headers: { Authorization: `KakaoAK ee2b6e2d5141747d912a9540432a7a61` },
-      params: { query: address }
+      params: { query: fullAddress }
     });
 
     if (geoRes.data.documents.length === 0) {
@@ -57,7 +60,8 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
       ownerId,
       title,
       description,
-      address,
+      addressMain,
+      addressDetail,
       price,
       startDate,
       endDate,

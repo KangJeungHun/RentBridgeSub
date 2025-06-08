@@ -4,11 +4,13 @@ import android.R
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.test.isFocusable
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -51,23 +53,33 @@ class AddPropertyActivity : AppCompatActivity() {
             imagePicker.launch("image/*")
         }
 
-        binding.etAddress.setOnClickListener {
-            addressLauncher.launch(Intent(this, WebViewActivity::class.java))
+        binding.etAddress.apply {
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isCursorVisible = false
+            // (Optional) 소프트키보드가 뜨는 걸 방지하려면:
+            inputType = InputType.TYPE_NULL
+
+            setOnClickListener {
+                // 이 로직은 기존과 동일하게 한 번만 클릭해도 실행됩니다.
+                addressLauncher.launch(Intent(this@AddPropertyActivity, WebViewActivity::class.java))
+            }
         }
 
         binding.btnRegister.setOnClickListener {
             val title = binding.etTitle.text.toString()
             val description = binding.etDescription.text.toString()
-            val address = binding.etAddress.text.toString()
+            val addressMain = binding.etAddress.text.toString()
+            val addressDetail = binding.etAddressDetail.text.toString()
             val price = binding.etPrice.text.toString()
             val startDate = binding.etStartDate.text.toString()
             val endDate = binding.etEndDate.text.toString()
             val landlordPhone = binding.etLandlordPhone.text.toString()
 
             if (title.isNotEmpty() && description.isNotEmpty() &&
-                price.isNotEmpty() && address.isNotEmpty() &&
-                startDate.isNotEmpty() && endDate.isNotEmpty() &&
-                landlordPhone.isNotEmpty()) {
+                price.isNotEmpty() && addressMain.isNotEmpty() &&
+                addressDetail.isNotEmpty() && startDate.isNotEmpty() &&
+                endDate.isNotEmpty() && landlordPhone.isNotEmpty()) {
 
                 if (selectedImageUri == null) {
                     // 이미지 없이 등록
@@ -75,7 +87,8 @@ class AddPropertyActivity : AppCompatActivity() {
                         UUID.randomUUID().toString(),
                         title,
                         description,
-                        address,
+                        addressMain,
+                        addressDetail,
                         price,
                         startDate,
                         endDate,
@@ -84,7 +97,7 @@ class AddPropertyActivity : AppCompatActivity() {
                     )
                 } else {
                     // 이미지 업로드 후 등록
-                    uploadImageAndRegister(title, description, address, price, startDate, endDate, landlordPhone)
+                    uploadImageAndRegister(title, description, addressMain, addressDetail, price, startDate, endDate, landlordPhone)
                 }
             } else {
                 Toast.makeText(this, "모든 정보를 입력하세요", Toast.LENGTH_SHORT).show()
@@ -95,7 +108,8 @@ class AddPropertyActivity : AppCompatActivity() {
     private fun uploadImageAndRegister(
         title: String,
         description: String,
-        address: String,
+        addressMain: String,
+        addressDetail: String,
         price: String,
         startDate: String,
         endDate: String,
@@ -112,7 +126,8 @@ class AddPropertyActivity : AppCompatActivity() {
                             propertyId,
                             title,
                             description,
-                            address,
+                            addressMain,
+                            addressDetail,
                             price,
                             startDate,
                             endDate,
@@ -131,7 +146,8 @@ class AddPropertyActivity : AppCompatActivity() {
         propertyId: String,
         title: String,
         description: String,
-        address: String,
+        addressMain: String,
+        addressDetail: String,
         price: String,
         startDate: String,
         endDate: String,
@@ -143,7 +159,8 @@ class AddPropertyActivity : AppCompatActivity() {
             put("ownerId", auth.currentUser?.uid)
             put("title", title)
             put("description", description)
-            put("address", address)
+            put("addressMain", addressMain)
+            put("addressDetail", addressDetail)
             put("price", price)
             put("startDate", startDate)
             put("endDate", endDate)

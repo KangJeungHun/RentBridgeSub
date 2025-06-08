@@ -171,7 +171,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                         MarkerOptions()
                             .position(position)
                             .title(property.title)
-                            .snippet("📍 ${property.address}\n💰 ${property.price}\n📅 ${property.startDate} ~ ${property.endDate}")
+                            .snippet("📍 ${property.addressMain + ' ' + property.addressDetail}\n💰 ${property.price}\n📅 ${property.startDate} ~ ${property.endDate}")
                     )
 
                     propertyList.add(property)

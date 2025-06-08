@@ -24,7 +24,7 @@ class PropertyDetailActivity : AppCompatActivity() {
         property?.let { prop ->
             binding.tvDetailTitle.text = prop.title
             binding.tvDetailDescription.text = prop.description
-            binding.tvDetailAddress.text = prop.address
+            binding.tvDetailAddress.text = prop.addressMain + ' ' + prop.addressDetail
             binding.tvDetailPeriod.text = "${prop.startDate} ~ ${prop.endDate}"
             binding.tvDetailPrice.text = prop.price
 

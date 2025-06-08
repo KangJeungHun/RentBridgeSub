@@ -173,7 +173,7 @@ class MyPageActivity : AppCompatActivity() {
                     val message = """
                     [렌트브릿지] 계약서 검토 요청
                     매물 제목: ${property.title}
-                    주소: ${property.address}
+                    주소: ${property.addressMain + ' ' + property.addressDetail}
                     전대인: ${auth.currentUser?.email}
                     계약서 파일을 참고해주세요.
                 """.trimIndent()

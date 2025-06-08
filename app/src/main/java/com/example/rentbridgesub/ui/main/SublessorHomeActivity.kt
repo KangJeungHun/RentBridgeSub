@@ -82,9 +82,9 @@ class SublessorHomeActivity : AppCompatActivity() {
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
                     val property = documents.documents[0]
-                    titleView.text = property.getString("title") ?: "제목 없음"
-                    addressView.text = property.getString("address") ?: "주소 없음"
-                    priceView.text = property.getString("price") ?: "가격 정보 없음"
+                    titleView.text = property.getString("title")
+                    addressView.text = property.getString("addressMain") + ' ' + property.getString("addressDetail")
+                    priceView.text = property.getString("price")
 
                     val imageUrl = property.getString("imageUrl")
                     if (!imageUrl.isNullOrEmpty()) {

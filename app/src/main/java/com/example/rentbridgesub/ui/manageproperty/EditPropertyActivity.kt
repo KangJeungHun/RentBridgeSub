@@ -4,12 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityEditPropertyBinding
+import com.example.rentbridgesub.ui.WebView.WebViewActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.MemoryPolicy
@@ -22,12 +24,24 @@ class EditPropertyActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private var selectedImageUri: Uri? = null
     private val storage = FirebaseStorage.getInstance()
+    private var addressMain = ""      // 도로명 주소
+    private var addressDetail = ""    // 상세주소
 
     private val imagePicker =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             selectedImageUri = uri
             binding.etImage.setImageURI(uri)
         }
+
+    private val addressLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val address = result.data?.getStringExtra("selectedAddress")
+            Log.d("AddPropertyActivity", "받은 주소: $address")  // ✅ 결과 수신 로그
+            binding.etAddress.setText(address)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +68,22 @@ class EditPropertyActivity : AppCompatActivity() {
         binding.etTitle.setText(property.title)
         binding.etDescription.setText(property.description)
         binding.etPrice.setText(property.price)
-        binding.etAddress.setText(property.address)
+        binding.etAddress.setText(property.addressMain)
+
+        binding.etAddress.apply {
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isCursorVisible = false
+            // (Optional) 소프트키보드가 뜨는 걸 방지하려면:
+            inputType = InputType.TYPE_NULL
+
+            setOnClickListener {
+                // 이 로직은 기존과 동일하게 한 번만 클릭해도 실행됩니다.
+                addressLauncher.launch(Intent(this@EditPropertyActivity, WebViewActivity::class.java))
+            }
+        }
+
+        binding.etAddressDetail.setText(property.addressDetail)
         binding.etStartDate.setText(property.startDate)
         binding.etEndDate.setText(property.endDate)
         binding.etLandlordPhone.setText(property.landlordPhone) // ✅ 추가됨
@@ -63,7 +92,8 @@ class EditPropertyActivity : AppCompatActivity() {
             val updatedTitle = binding.etTitle.text.toString()
             val updatedDesc = binding.etDescription.text.toString()
             val updatedPrice = binding.etPrice.text.toString()
-            val updatedAddress = binding.etAddress.text.toString()
+            val updatedAddressMain = binding.etAddress.text.toString()
+            val updatedAddressDetail = binding.etAddressDetail.text.toString()
             val updatedStartDate = binding.etStartDate.text.toString()
             val updatedEndDate = binding.etEndDate.text.toString()
             val updatedLandlordPhone = binding.etLandlordPhone.text.toString()
@@ -77,7 +107,8 @@ class EditPropertyActivity : AppCompatActivity() {
                                 updatedTitle,
                                 updatedDesc,
                                 updatedPrice,
-                                updatedAddress,
+                                updatedAddressMain,
+                                updatedAddressDetail,
                                 updatedStartDate,
                                 updatedEndDate,
                                 downloadUri.toString(),
@@ -93,7 +124,8 @@ class EditPropertyActivity : AppCompatActivity() {
                     updatedTitle,
                     updatedDesc,
                     updatedPrice,
-                    updatedAddress,
+                    updatedAddressMain,
+                    updatedAddressDetail,
                     updatedStartDate,
                     updatedEndDate,
                     property.imageUrl,
@@ -124,7 +156,8 @@ class EditPropertyActivity : AppCompatActivity() {
         title: String,
         desc: String,
         price: String,
-        address: String,
+        addressMain: String,
+        addressDetail: String,
         startDate: String,
         endDate: String,
         imageUrl: String,
@@ -134,7 +167,8 @@ class EditPropertyActivity : AppCompatActivity() {
             title = title,
             description = desc,
             price = price,
-            address = address,
+            addressMain = addressMain,
+            addressDetail = addressDetail,
             startDate = startDate,
             endDate = endDate,
             imageUrl = imageUrl,
