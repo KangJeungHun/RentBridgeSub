@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.R
+import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -35,8 +36,7 @@ class SublesseeHomeActivity : AppCompatActivity() {
         }
 
         findViewById<LinearLayout>(R.id.navChat).setOnClickListener {
-            startActivity(Intent(this, MyPageActivity::class.java))
-            finish()
+            startActivity(Intent(this, ChatListActivity::class.java))
         }
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {

@@ -116,10 +116,16 @@ class MyPageActivity : AppCompatActivity() {
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
 
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
+            finish()
+        }
+
+        findViewById<LinearLayout>(R.id.navChat).setOnClickListener {
+            startActivity(Intent(this, ChatListActivity::class.java))
         }
 
         applyUserTypeVisibility()
@@ -275,13 +281,15 @@ class MyPageActivity : AppCompatActivity() {
     private fun saveConsentRequest(reqId: String, property: Property, fileUrl: String) {
         val currentUser = auth.currentUser?.uid ?: return
         db.collection("Consents").document(reqId)
-            .set(mapOf(
-                "propertyId"  to property.id,
-                "sublessorId" to currentUser,
-                "fileUrl"     to fileUrl,
-                "requestedAt" to FieldValue.serverTimestamp(),
-                "response"    to "pending"
-            ))
+            .set(
+                mapOf(
+                    "propertyId" to property.id,
+                    "sublessorId" to currentUser,
+                    "fileUrl" to fileUrl,
+                    "requestedAt" to FieldValue.serverTimestamp(),
+                    "response" to "pending"
+                )
+            )
             .addOnSuccessListener {
                 sendConsentSms(reqId, property, fileUrl)
             }
@@ -299,7 +307,12 @@ class MyPageActivity : AppCompatActivity() {
             매물: ${property.title}
             주소: ${property.addressMain} ${property.addressDetail}
             계약서 링크: $fileUrl
-            동의/거부 버튼 누르시려면 다음 링크를 눌러주세요! --> https://rentbridgesub.web.app/consent.html?req=$reqId&file=${URLEncoder.encode(fileUrl, "UTF-8")}
+            동의/거부 버튼 누르시려면 다음 링크를 눌러주세요! --> https://rentbridgesub.web.app/consent.html?req=$reqId&file=${
+            URLEncoder.encode(
+                fileUrl,
+                "UTF-8"
+            )
+        }
         """.trimIndent()
 
         val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -347,10 +360,10 @@ class MyPageActivity : AppCompatActivity() {
                 snapshots?.documentChanges?.forEach { change ->
                     val data = change.document.data
                     val reqId = change.document.id
-                    val resp  = data["response"] as? String ?: return@forEach
+                    val resp = data["response"] as? String ?: return@forEach
 
                     when (resp) {
-                        "agree"  -> onLandlordAgreed(reqId)
+                        "agree" -> onLandlordAgreed(reqId)
                         "reject" -> onLandlordRejected(reqId)
                     }
                 }
@@ -367,5 +380,14 @@ class MyPageActivity : AppCompatActivity() {
     private fun onLandlordRejected(reqId: String) {
         Toast.makeText(this, "임대인이 거부했습니다.", Toast.LENGTH_LONG).show()
         // TODO: 여기서 원하는 UI 업데이트 코드 추가
+    }
+
+    override fun onBackPressed() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("앱 종료")
+            .setMessage("앱을 종료하시겠습니까?")
+            .setPositiveButton("예") { _, _ -> finishAffinity() }
+            .setNegativeButton("아니요", null)
+            .show()
     }
 }

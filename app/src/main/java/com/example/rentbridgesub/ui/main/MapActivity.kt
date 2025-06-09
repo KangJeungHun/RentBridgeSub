@@ -19,6 +19,7 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
+import com.example.rentbridgesub.ui.chat.ChatListActivity
 //import com.example.rentbridgesub.ui.property.PropertyBottomSheet
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -90,11 +91,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            finish()
+        }
+
+        findViewById<LinearLayout>(R.id.navChat).setOnClickListener {
+            startActivity(Intent(this, ChatListActivity::class.java))
         }
 
         findViewById<LinearLayout>(R.id.navMyPage).setOnClickListener {
             val intent = Intent(this, MyPageActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 
