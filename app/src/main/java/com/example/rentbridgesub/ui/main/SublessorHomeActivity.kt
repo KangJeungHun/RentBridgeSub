@@ -16,6 +16,8 @@ import com.example.rentbridgesub.R
 import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -29,6 +31,9 @@ class SublessorHomeActivity : AppCompatActivity() {
     private lateinit var tvContractedPropertyTitle: TextView
     private lateinit var tvStartDate: TextView
     private lateinit var tvEndDate: TextView
+
+    private lateinit var registeredPropertyCard: CardView
+    private lateinit var cardNoRegisteredProperty: CardView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +62,9 @@ class SublessorHomeActivity : AppCompatActivity() {
                 nameTextView.text = "$name 님, 환영합니다!"
             }
 
+        registeredPropertyCard       = findViewById(R.id.registeredPropertyCard)
+        cardNoRegisteredProperty     = findViewById(R.id.cardNoRegisteredProperty)
+
         loadLatestProperty(uid, titleView, addressView, priceView)
 
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
@@ -73,7 +81,7 @@ class SublessorHomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListActivity::class.java))
         }
 
-        findViewById<Button>(R.id.btnAddProperty).setOnClickListener {
+        findViewById<ExtendedFloatingActionButton>(R.id.btnAddProperty).setOnClickListener {
             startActivity(Intent(this, AddPropertyActivity::class.java))
         }
 
@@ -113,16 +121,16 @@ class SublessorHomeActivity : AppCompatActivity() {
                     } else {
                         imageView.setImageResource(R.drawable.ic_placeholder)
                     }
+                    registeredPropertyCard.visibility   = View.VISIBLE
+                    cardNoRegisteredProperty.visibility = View.GONE
                 } else {
-                    titleView.text = "등록된 매물이 없습니다"
-                    addressView.text = ""
-                    priceView.text = ""
+                    registeredPropertyCard.visibility   = View.GONE
+                    cardNoRegisteredProperty.visibility = View.VISIBLE
                 }
             }
             .addOnFailureListener {
-                titleView.text = "매물 정보를 불러올 수 없습니다"
-                addressView.text = ""
-                priceView.text = ""
+                registeredPropertyCard.visibility   = View.GONE
+                cardNoRegisteredProperty.visibility = View.VISIBLE
             }
     }
 

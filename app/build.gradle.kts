@@ -73,6 +73,7 @@ dependencies {
     implementation ("com.github.chrisbanes:PhotoView:2.3.0")
     implementation ("androidx.webkit:webkit:1.8.0")
 
+    implementation ("com.google.android.material:material:1.9.0")
 }
 
 

@@ -36,12 +36,20 @@
                 android:layout_marginBottom="16dp" />
 
             <!-- 계약 현황 -->
-            <TextView
-                android:text="계약 현황"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:text="계약 현황"
+                    android:textStyle="bold"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardNoContract"
@@ -54,8 +62,9 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp"
+                    android:padding="40dp"
                     android:text="현재 없음"
+                    android:textColor="@android:color/darker_gray"
                     android:textSize="16sp"
                     android:gravity="center"/>
             </androidx.cardview.widget.CardView>
@@ -66,7 +75,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -100,16 +109,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- 매물 등록하기 (파란 버튼) -->
-            <Button
-                android:id="@+id/btnAddProperty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="매물 등록하기"
-                android:textColor="@android:color/white"
-                android:backgroundTint="@color/blue"
-                android:layout_marginBottom="12dp"/>
-
             <!-- 내 매물 보기 -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -126,24 +125,60 @@
 
             </LinearLayout>
 
+            <!-- 2) 등록한 매물이 없을 때 보여줄 “Empty State” 카드 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardNoRegisteredProperty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="24dp"
+                android:visibility="visible">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="40dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_round_house"
+                        app:tint="@android:color/darker_gray"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="현재 등록한 매물이 없습니다."
+                        android:textColor="@android:color/darker_gray"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/registeredPropertyCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:visibility="visible">
 
                 <LinearLayout
                     android:orientation="horizontal"
-                    android:padding="12dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="24dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
 
                     <ImageView
                         android:id="@+id/imgProperty"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_placeholder"/>
 
@@ -151,7 +186,7 @@
                         android:orientation="vertical"
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="wrap_content">
+                        android:layout_height="100dp">
 
                         <TextView
                             android:id="@+id/tvPropertyTitle"
@@ -244,4 +279,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnAddProperty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="매물 등록하기"
+        android:textColor="@color/white"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/white"
+        app:backgroundTint="@color/blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/customBottomBar"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
