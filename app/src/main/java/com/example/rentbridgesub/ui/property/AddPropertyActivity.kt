@@ -6,11 +6,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.isFocusable
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -154,6 +156,9 @@ class AddPropertyActivity : AppCompatActivity() {
         imageUrl: String,
         landlordPhone: String
     ) {
+        binding.progressBarLoading.visibility = View.VISIBLE
+        binding.btnRegister.isEnabled = false
+
         val json = JSONObject().apply {
             put("id", propertyId)
             put("ownerId", auth.currentUser?.uid)
@@ -176,13 +181,23 @@ class AddPropertyActivity : AppCompatActivity() {
             url,
             json,
             { response ->
+                binding.progressBarLoading.visibility = View.GONE
+                binding.btnRegister.isEnabled = true
                 Toast.makeText(this, "등록 성공", Toast.LENGTH_SHORT).show()
                 finish()
             },
             { error ->
+                binding.progressBarLoading.visibility = View.GONE
+                binding.btnRegister.isEnabled = true
                 Log.e("RegisterProperty", "에러 상세: ${error.networkResponse?.statusCode} / ${error.message}")
                 Toast.makeText(this, "오류: ${error.message}", Toast.LENGTH_SHORT).show()
             }
+        )
+
+        request.retryPolicy = DefaultRetryPolicy(
+            /* timeoutMs */ 5000,
+            /* maxNumRetries */ 0,
+            /* backoffMultiplier */ DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
         )
 
         Volley.newRequestQueue(this).add(request)
