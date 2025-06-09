@@ -8,6 +8,7 @@
  */
 
 const {onRequest} = require("firebase-functions/v2/https");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const logger = require("firebase-functions/logger");
 
 // Create and deploy your first functions
@@ -79,4 +80,76 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
     res.status(500).json({ error: "서버 오류 발생" });
   }
 });
-// 강제 배포를 위한 더미 주석
+
+exports.recordConsent = functions.https.onCall(async (req, res) => {
+  // CORS 허용
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send('');
+  }
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
+  const { reqId, response } = req.body || {};
+  if (!reqId || !['agree','reject'].includes(response)) {
+    return res.status(400).send('Invalid');
+  }
+  try {
+    const consentRef = admin.firestore().collection('Consents').doc(reqId);
+    const snap = await consentRef.get();
+    if (!snap.exists) {
+      return res.status(404).send('Consent request not found');
+    }
+    await consentRef.update({ response, respondedAt: Date.now() });
+    return res.status(200).send('OK');
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send('Server Error');
+  }
+});
+
+exports.notifySublessor = onDocumentWritten(
+  "Consents/{reqId}",
+  async (event) => {
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+
+    // 처음에는 response 필드가 없었다가, 응답이 기록된 경우
+    if (!before?.response && after?.response) {
+      const sublessorId = after.sublessorId;
+      // sublessor 의 FCM 토큰 가져오기
+      const userSnap = await admin
+        .firestore()
+        .collection("Users")
+        .doc(sublessorId)
+        .get();
+      const token = userSnap.get("fcmToken");
+      if (!token) {
+        logger.warn(`No FCM token for user ${sublessorId}`);
+        return;
+      }
+
+      const payload = {
+        notification: {
+          title: "계약서 동의 상태 업데이트",
+          body:
+            after.response === "agree"
+              ? "임대인이 계약서에 동의했습니다."
+              : "임대인이 계약서를 거부했습니다."
+        },
+        data: {
+          reqId: event.params.reqId,
+          response: after.response
+        }
+      };
+
+      try {
+        await admin.messaging().sendToDevice(token, payload);
+        logger.info(`Sent FCM to ${sublessorId}`);
+      } catch (e) {
+        logger.error("FCM send error:", e);
+      }
+    }
+  }
+);
