@@ -20,7 +20,10 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      { "source": "**", "destination": "/consent.html" }
+      {
+        "source": "/recordConsent",
+        "function": "recordConsent"
+      }
     ]
   }
 }

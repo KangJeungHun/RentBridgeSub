@@ -299,7 +299,7 @@ class MyPageActivity : AppCompatActivity() {
             매물: ${property.title}
             주소: ${property.addressMain} ${property.addressDetail}
             계약서 링크: $fileUrl
-            동의/거부 버튼 누르시려면 다음 링크를 눌러주세요! --> https://rentbridge.app/consent?req=$reqId
+            동의/거부 버튼 누르시려면 다음 링크를 눌러주세요! --> https://rentbridgesub.web.app/consent.html?req=$reqId&file=${URLEncoder.encode(fileUrl, "UTF-8")}
         """.trimIndent()
 
         val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -359,13 +359,13 @@ class MyPageActivity : AppCompatActivity() {
 
     /** 임대인이 동의했을 때 호출 */
     private fun onLandlordAgreed(reqId: String) {
-        Toast.makeText(this, "임대인이 동의했습니다! (req=$reqId)", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "임대인이 동의했습니다!", Toast.LENGTH_LONG).show()
         // TODO: 여기서 원하는 UI 업데이트 코드 추가
     }
 
     /** 임대인이 거부했을 때 호출 */
     private fun onLandlordRejected(reqId: String) {
-        Toast.makeText(this, "임대인이 거부했습니다. (req=$reqId)", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "임대인이 거부했습니다.", Toast.LENGTH_LONG).show()
         // TODO: 여기서 원하는 UI 업데이트 코드 추가
     }
 }

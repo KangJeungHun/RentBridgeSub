@@ -2,72 +2,58 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>전대차 계약서 동의</title>
+    <title>계약서 동의</title>
     <style>
         body { font-family: sans-serif; padding: 1rem; }
-        button { font-size: 1.1rem; padding: .5rem 1rem; margin: .5rem; }
+        button { font-size: 1.1rem; padding: .5rem 1rem; margin: .5rem }
     </style>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <h1>계약서 검토 요청</h1>
-<iframe src="contractFrame" width="100%" height="500px"></iframe>
+<!-- downloadUrl 파라미터로 받은 fileUrl 로 iframe src 를 설정 -->
+<iframe
+        id="pdfFrame"
+        width="100%"
+        height="1000px"
+        style="border:1px solid #ccc">
+</iframe>
+
 <div>
     <button id="agree">동의합니다</button>
     <button id="reject">동의하지 않습니다</button>
 </div>
+
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDq-rNmGC9YzlqY15MIlmblCW2lvuptPvk",
-      authDomain: "rentbridgesub.firebaseapp.com",
-      projectId: "rentbridgesub",
-      storageBucket: "rentbridgesub.firebasestorage.app",
-      messagingSenderId: "240171466327",
-      appId: "1:240171466327:web:cfa2cf0cfcb7addb1d2d12",
-      measurementId: "G-4VSZERCJMR"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // 2) URL 파라미터에서 reqId 읽기
+    // URL 파라미터 읽기
     const params = new URLSearchParams(location.search);
-    const reqId = params.get('req');
+    const reqId   = params.get('req');
+    const fileUrl = params.get('file');  // SMS 메시지에 fileUrl 도 함께 전달하세요
 
-    if (!reqId) {
-      document.body.innerHTML = '<p>잘못된 접근입니다.</p>';
-      throw new Error('No reqId');
+    // 1) iframe 에 PDF URL 반영
+    if (fileUrl) {
+      document.getElementById('pdfFrame').src = fileUrl;
+    } else {
+      document.body.innerHTML = '<p>PDF 파일 URL이 없습니다.</p>';
     }
 
-    // 3) Firestore 에서 fileUrl 가져와 iframe 에 세팅
-    db.collection('Consents').doc(reqId).get()
-      .then(doc => {
-        if (!doc.exists) throw '요청 정보가 없습니다.';
-        const data    = doc.data();
-        const fileUrl = data.fileUrl;
-        if (!fileUrl) throw '파일 URL 없음';
-        document.getElementById('contractFrame').src = fileUrl;
-      })
-      .catch(e => {
-        document.body.innerHTML = `<p>PDF를 불러올 수 없습니다: ${e}</p>`;
-      });
-
-    // 4) 동의/거부 버튼 콜백
+    // 2) 동의/거부 버튼
     function send(response) {
-      fetch('https://us-central1-YOUR-PROJECT.cloudfunctions.net/recordConsent', {
+      fetch('/recordConsent', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({reqId, response})
+        body: JSON.stringify({ reqId, response })
       })
-      .then(() => {
-        document.body.innerHTML = '<h2>감사합니다. 응답이 기록되었습니다.</h2>';
+      .then(res => {
+        if (res.ok) {
+          document.body.innerHTML = '<h2>감사합니다. 응답이 기록되었습니다.</h2>';
+        } else {
+          throw new Error(res.statusText);
+        }
       })
       .catch(e => alert('오류:'+e));
     }
-    document.getElementById('agree').onclick  = ()=> send('agree');
-    document.getElementById('reject').onclick = ()=> send('reject');
+    document.getElementById('agree').onclick  = () => send('agree');
+    document.getElementById('reject').onclick = () => send('reject');
 </script>
 </body>
 </html>

@@ -81,10 +81,11 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
   }
 });
 
-exports.recordConsent = functions.https.onCall(async (req, res) => {
+exports.recordConsent = functions.https.onRequest(async (req, res) => {
   // CORS 허용
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') {
     return res.status(204).send('');
   }
@@ -93,7 +94,7 @@ exports.recordConsent = functions.https.onCall(async (req, res) => {
   }
   const { reqId, response } = req.body || {};
   if (!reqId || !['agree','reject'].includes(response)) {
-    return res.status(400).send('Invalid');
+    return res.status(400).send('Invalid request');
   }
   try {
     const consentRef = admin.firestore().collection('Consents').doc(reqId);
