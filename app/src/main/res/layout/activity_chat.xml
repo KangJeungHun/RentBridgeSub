@@ -11,33 +11,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/contractLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- 계약서 보내기 버튼 -->
-    <LinearLayout
-        android:id="@+id/contractLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/layoutMessage"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/btnSendContract"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="계약서 보내기" />
-
-    </LinearLayout>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 메시지 입력 영역 -->
     <LinearLayout
@@ -52,15 +28,17 @@
         <ImageButton
             android:id="@+id/btnImage"
             android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_menu_photo"
+            app:backgroundTint="@color/blue"
             android:contentDescription="이미지 선택" />
 
         <ImageButton
             android:id="@+id/btnFile"
             android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_gallery"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_menu_file"
+            app:backgroundTint="@color/blue"
             android:contentDescription="파일 선택" />
 
         <EditText
@@ -74,7 +52,8 @@
             android:id="@+id/btnSend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="전송" />
+            android:text="전송"
+            app:backgroundTint="@color/blue" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

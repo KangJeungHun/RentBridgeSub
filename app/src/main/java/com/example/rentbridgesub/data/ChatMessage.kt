@@ -8,6 +8,7 @@ data class ChatMessage(
     val fileUrl: String = "",
     val fileName: String = "",
     val timestamp: Long = 0,
-    val type: String = "text"  // "text", "image", "contract"
+    val read: Boolean = false,
+    val type: String = "text",  // "text", "image", "contract"
 )
 
