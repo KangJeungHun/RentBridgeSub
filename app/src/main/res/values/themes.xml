@@ -6,4 +6,9 @@
     </style>
 
     <style name="Theme.RentBridgeSub" parent="Base.Theme.RentBridgeSub" />
+
+    <style name="ShapeAppearance.App.SquareCorner" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">0dp</item>
+    </style>
 </resources>

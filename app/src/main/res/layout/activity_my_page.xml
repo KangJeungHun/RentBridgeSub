@@ -60,27 +60,6 @@
                 android:layout_marginBottom="12dp" />
 
             <Button
-                android:id="@+id/btnViewContract"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="전대차 계약서 양식 다운로드"
-                android:layout_marginBottom="12dp" />
-
-            <Button
-                android:id="@+id/btnSelectContract"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="임대인에게 전송할 계약서 파일 선택"
-                android:layout_marginBottom="12dp" />
-
-            <Button
-                android:id="@+id/btnContactLandlord"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="임대인에게 동의 연락"
-                android:layout_marginBottom="12dp" />
-
-            <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
