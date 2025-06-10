@@ -1,6 +1,6 @@
 package com.example.rentbridgesub.ui.property
 
-import android.R
+import com.example.rentbridgesub.R
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,12 +12,14 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.test.isFocusable
+import androidx.core.content.ContextCompat
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.rentbridgesub.databinding.ActivityAddPropertyBinding
 import com.example.rentbridgesub.ui.WebView.WebViewActivity
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONObject
@@ -64,6 +66,14 @@ class AddPropertyActivity : AppCompatActivity() {
 
             setOnClickListener {
                 // 이 로직은 기존과 동일하게 한 번만 클릭해도 실행됩니다.
+                addressLauncher.launch(Intent(this@AddPropertyActivity, WebViewActivity::class.java))
+            }
+        }
+
+        binding.tilAddress.apply {
+            endIconMode = TextInputLayout.END_ICON_CUSTOM
+            endIconDrawable = ContextCompat.getDrawable(context, R.drawable.ic_search)
+            setEndIconOnClickListener {
                 addressLauncher.launch(Intent(this@AddPropertyActivity, WebViewActivity::class.java))
             }
         }
