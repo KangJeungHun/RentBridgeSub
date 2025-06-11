@@ -3,6 +3,7 @@ package com.example.rentbridgesub.ui.chat
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -60,6 +61,9 @@ class ChatListActivity : AppCompatActivity() {
                 binding.recyclerViewChatList.adapter = adapter
 
                 loadChatUsers()
+
+                setSupportActionBar(binding.toolbar)
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
             }
     }
 
@@ -153,5 +157,12 @@ class ChatListActivity : AppCompatActivity() {
                         }
                     }
             }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> { finish(); true }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
