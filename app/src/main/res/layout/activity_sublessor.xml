@@ -353,11 +353,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="임대인에게 계약서와 함께 메시지를 보냅니다!"
-                android:textColor="@android:color/darker_gray"
+                android:textColor="@color/blue"
                 android:textStyle="bold"
-                android:textAlignment="center"
                 android:textSize="14sp"
-                android:layout_marginBottom="8dp" />
+                android:drawableStart="@drawable/ic_info_outline"
+                android:drawablePadding="5dp"
+                android:drawableTint="@color/blue"
+                android:layout_marginBottom="20dp" />
 
             <!-- 채팅 섹션 -->
             <TextView

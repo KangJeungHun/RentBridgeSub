@@ -1,5 +1,6 @@
 package com.example.rentbridgesub.ui.main
 
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
@@ -29,6 +30,7 @@ import com.example.rentbridgesub.databinding.ActivitySublessorBinding
 import com.example.rentbridgesub.ui.chat.ChatActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.example.rentbridgesub.ui.chat.ChatSummaryAdapter
+import com.example.rentbridgesub.ui.manageproperty.EditPropertyActivity
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
 import com.google.android.gms.tasks.Tasks
@@ -37,6 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import java.net.URLEncoder
@@ -46,6 +49,7 @@ import java.util.UUID
 
 class SublessorHomeActivity : AppCompatActivity() {
     private lateinit var managePropertyLauncher: ActivityResultLauncher<Intent>
+    private lateinit var editPropertyLauncher: ActivityResultLauncher<Intent>
 
     private lateinit var storage: FirebaseStorage
     private val db = FirebaseFirestore.getInstance()
@@ -87,6 +91,10 @@ class SublessorHomeActivity : AppCompatActivity() {
             }
         }
 
+    private lateinit var btnAddProperty: ExtendedFloatingActionButton
+    private var myPropertyId: String? = null
+    private var propertyListener: ListenerRegistration? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sublessor)
@@ -96,15 +104,41 @@ class SublessorHomeActivity : AppCompatActivity() {
         val titleView = findViewById<TextView>(R.id.tvPropertyTitle)
         val addressView = findViewById<TextView>(R.id.tvPropertyAddress)
         val priceView = findViewById<TextView>(R.id.tvPropertyPrice)
+        val imageView   = findViewById<ImageView>(R.id.imgProperty)
+        val startDateView = findViewById<TextView>(R.id.tvStartDate)
+        val endDateView = findViewById<TextView>(R.id.tvEndDate)
+        btnAddProperty = findViewById(R.id.btnAddProperty)
+        registeredPropertyCard = findViewById(R.id.registeredPropertyCard)
+        cardNoRegisteredProperty = findViewById(R.id.cardNoRegisteredProperty)
 
-        managePropertyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
+        editPropertyLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                // 수정 후 돌아왔을 때, 필요하다면 여기에서 UI 갱신 처리
                 loadLatestProperty(uid, titleView, addressView, priceView)
             }
         }
 
+//        managePropertyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+//            if (result.resultCode == RESULT_OK) {
+//                loadLatestProperty(uid, titleView, addressView, priceView)
+//            }
+//        }
+
+//        findViewById<androidx.cardview.widget.CardView>(R.id.registeredPropertyCard).setOnClickListener {
+//            managePropertyLauncher.launch(Intent(this, ManagePropertiesActivity::class.java))
+//        }
+
         findViewById<androidx.cardview.widget.CardView>(R.id.registeredPropertyCard).setOnClickListener {
-            managePropertyLauncher.launch(Intent(this, ManagePropertiesActivity::class.java))
+            if (propertyList.isNotEmpty()) {
+                val prop = propertyList[0]
+                Intent(this, EditPropertyActivity::class.java).apply {
+                    putExtra("property", prop)
+                }.also { startActivity(it) }
+            } else {
+                Toast.makeText(this, "등록된 매물이 없습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         FirebaseFirestore.getInstance().collection("Users").document(uid!!)
@@ -113,14 +147,6 @@ class SublessorHomeActivity : AppCompatActivity() {
                 val name = it.getString("name") ?: "사용자"
                 nameTextView.text = "$name 님, 환영합니다!"
             }
-
-        registeredPropertyCard       = findViewById(R.id.registeredPropertyCard)
-        cardNoRegisteredProperty     = findViewById(R.id.cardNoRegisteredProperty)
-
-        loadLatestProperty(uid, titleView, addressView, priceView)
-
-        tvSelectContractHint      = findViewById(R.id.tvSelectContractHint)
-        tvSelectedContractName    = findViewById(R.id.tvSelectedContractName)
 
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
             startActivity(Intent(this, MapActivity::class.java))
@@ -136,9 +162,64 @@ class SublessorHomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListActivity::class.java))
         }
 
-        findViewById<ExtendedFloatingActionButton>(R.id.btnAddProperty).setOnClickListener {
+        btnAddProperty.setOnClickListener {
             startActivity(Intent(this, AddPropertyActivity::class.java))
         }
+
+        // 카드 눌렀을 때 수정 화면으로
+        registeredPropertyCard.setOnClickListener {
+            myPropertyId?.let { id ->
+                val prop = propertyList.first()
+                Intent(this, EditPropertyActivity::class.java)
+                    .putExtra("property", prop)
+                    .also { editPropertyLauncher.launch(it) }
+            }
+        }
+
+        // **여기서부터 실시간 리스너 시작**
+        db.collection("Properties")
+            .whereEqualTo("ownerId", uid)
+            .limit(1)
+            .addSnapshotListener { snap, err ->
+                if (err != null) {
+                    Log.e("PropListen", "리스너 오류", err)
+                    return@addSnapshotListener
+                }
+                val doc = snap?.documents?.firstOrNull()
+                if (doc != null && doc.exists()) {
+                    // 문서가 있으면 UI 업데이트
+                    val p = doc.toObject(Property::class.java)!!
+                    myPropertyId = doc.id
+                    propertyList.clear()
+                    propertyList.add(p)
+
+                    titleView.text   = p.title
+                    addressView.text = "${p.addressMain} ${p.addressDetail}"
+                    priceView.text   = p.price
+                    startDateView.text = p.startDate
+                    endDateView.text = p.endDate
+                    if (p.imageUrl.isNotEmpty()) {
+                        Glide.with(this)
+                            .load(p.imageUrl)
+                            .placeholder(R.drawable.ic_placeholder)
+                            .into(imageView)
+                    } else {
+                        imageView.setImageResource(R.drawable.ic_placeholder)
+                    }
+
+                    registeredPropertyCard.visibility   = View.VISIBLE
+                    cardNoRegisteredProperty.visibility = View.GONE
+                    btnAddProperty.hide()
+                } else {
+                    // 문서가 없으면 등록 버튼 보여주기
+                    registeredPropertyCard.visibility   = View.GONE
+                    cardNoRegisteredProperty.visibility = View.VISIBLE
+                    btnAddProperty.show()
+                }
+            }
+        // **리스너 끝**
+
+//        loadLatestProperty(uid, titleView, addressView, priceView)
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             // stay here
@@ -219,14 +300,18 @@ class SublessorHomeActivity : AppCompatActivity() {
                     }
                     registeredPropertyCard.visibility   = View.VISIBLE
                     cardNoRegisteredProperty.visibility = View.GONE
+
+                    btnAddProperty.hide()
                 } else {
                     registeredPropertyCard.visibility   = View.GONE
                     cardNoRegisteredProperty.visibility = View.VISIBLE
+                    btnAddProperty.show()
                 }
             }
             .addOnFailureListener {
                 registeredPropertyCard.visibility   = View.GONE
                 cardNoRegisteredProperty.visibility = View.VISIBLE
+                btnAddProperty.show()
             }
     }
 
