@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View // ✅ 추가!
 import androidx.appcompat.app.AppCompatActivity
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityPropertyDetailBinding
@@ -13,6 +14,7 @@ class PropertyDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPropertyDetailBinding
     private var property: Property? = null
+    private var isRecommended: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +22,7 @@ class PropertyDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         property = intent.getSerializableExtra("property") as? Property
+        isRecommended = intent.getBooleanExtra("isRecommended", false)
 
         property?.let { prop ->
             binding.tvDetailTitle.text = prop.title
@@ -36,15 +39,18 @@ class PropertyDetailActivity : AppCompatActivity() {
 
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
             if (prop.ownerId == currentUserId) {
-                binding.btnChat.visibility = android.view.View.GONE
+                binding.btnChat.visibility = View.GONE
             } else {
-                binding.btnChat.visibility = android.view.View.VISIBLE
+                binding.btnChat.visibility = View.VISIBLE
                 binding.btnChat.setOnClickListener {
                     val intent = Intent(this, ChatActivity::class.java)
-                    intent.putExtra("receiverId", prop.ownerId) // 🔥 정확히 ownerId 넘기기
+                    intent.putExtra("receiverId", prop.ownerId)
                     startActivity(intent)
                 }
             }
+
+            // ✅ 추천 여부 표시
+            binding.tvRecommended.visibility = if (isRecommended) View.VISIBLE else View.GONE
         }
     }
 }
