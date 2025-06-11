@@ -47,7 +47,6 @@ import java.util.UUID
 class SublessorHomeActivity : AppCompatActivity() {
     private lateinit var managePropertyLauncher: ActivityResultLauncher<Intent>
 
-    private lateinit var binding: ActivitySublessorBinding
     private lateinit var storage: FirebaseStorage
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()

@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.RentBridgeSub" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Android 10(Q) 이상에서만 적용 -->
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
+</resources>

@@ -34,16 +34,16 @@ class PropertyAdapter(
         // ✨ 추천 라벨 표시
         holder.binding.tvRecommended.visibility = if (property.isRecommended) View.VISIBLE else View.GONE
 
-        if (property.ownerId == currentUserId) {
-            holder.binding.btnChat.visibility = View.GONE
-        } else {
-            holder.binding.btnChat.visibility = View.VISIBLE
-            holder.binding.btnChat.setOnClickListener {
-                val intent = Intent(holder.itemView.context, ChatActivity::class.java)
-                intent.putExtra("receiverId", property.ownerId)
-                holder.itemView.context.startActivity(intent)
-            }
-        }
+//        if (property.ownerId == currentUserId) {
+//            holder.binding.btnChat.visibility = View.GONE
+//        } else {
+//            holder.binding.btnChat.visibility = View.VISIBLE
+//            holder.binding.btnChat.setOnClickListener {
+//                val intent = Intent(holder.itemView.context, ChatActivity::class.java)
+//                intent.putExtra("receiverId", property.ownerId)
+//                holder.itemView.context.startActivity(intent)
+//            }
+//        }
 
         holder.itemView.setOnClickListener {
             onItemClick(property)

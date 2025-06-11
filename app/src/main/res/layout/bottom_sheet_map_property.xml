@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:orientation="vertical"
@@ -20,6 +21,7 @@
 
         <TextView android:id="@+id/tvTitle"
             android:text="제목"
+            android:textColor="@color/black"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
@@ -29,6 +31,7 @@
         <TextView
             android:id="@+id/tvOwnerName"
             android:text="등록자 이름"
+            android:textColor="@color/black"
             android:textStyle="italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,16 +40,19 @@
 
         <TextView android:id="@+id/tvAddress"
             android:text="주소"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView android:id="@+id/tvPrice"
             android:text="가격"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView android:id="@+id/tvPeriod"
             android:text="기간"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
@@ -54,6 +60,7 @@
         <TextView
             android:id="@+id/tvDescription"
             android:text="상세 설명"
+            android:textColor="@color/black"
             android:layout_marginTop="12dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -61,10 +68,14 @@
         <!-- 🔽 채팅하기 버튼 -->
         <Button
             android:id="@+id/btnChat"
-            android:text="채팅하기"
+            android:text="문의하기"
             android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:backgroundTint="@color/blue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </LinearLayout>
 </ScrollView>
