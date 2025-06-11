@@ -54,10 +54,7 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.recyclerViewMyProperties.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewMyProperties.adapter = adapter
-
-        binding.btnLogout.setOnClickListener {
+        binding.tvLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -69,7 +66,7 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListActivity::class.java))
         }
 
-        binding.btnEditProfile.setOnClickListener {
+        binding.tvEditProfile.setOnClickListener {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
@@ -101,7 +98,9 @@ class MyPageActivity : AppCompatActivity() {
         db.collection("Users").document(uid).get()
             .addOnSuccessListener { doc ->
                 val name = doc.getString("name") ?: "사용자"
-                binding.tvUserName.text = "$name 님의 마이페이지"
+                val email = doc.getString("email") ?: ""
+                binding.tvUserName.text = "$name"
+                binding.tvUserEmail.text = "$email"
             }
             .addOnFailureListener {
                 Toast.makeText(this, "사용자 이름 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
