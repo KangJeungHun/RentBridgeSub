@@ -127,6 +127,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="내 매물 관리"
+                        android:textColor="@color/blue"
                         android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.button.MaterialButton
@@ -135,6 +136,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="찜한 매물"
+                        android:textColor="@color/blue"
                         android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.button.MaterialButton
@@ -142,7 +144,8 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="채팅 내역"/>
+                        android:text="채팅 내역"
+                        android:textColor="@color/blue"/>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

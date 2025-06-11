@@ -343,6 +343,17 @@ class SublessorHomeActivity : AppCompatActivity() {
                             layoutContractStatus.visibility = View.VISIBLE
                             cardNoContract.visibility = View.GONE
                         }
+
+                    FirebaseFirestore.getInstance()
+                        .collection("Properties")
+                        .document(propertyId)
+                        .update("status", "rented")
+                        .addOnSuccessListener {
+//                            Toast.makeText(this, "매물이 계약 완료되어 숨김 처리됩니다.", Toast.LENGTH_LONG).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("StatusUpdate", "status 업데이트 실패", e)
+                        }
                 } else {
                     layoutContractStatus.visibility = View.GONE
                     cardNoContract.visibility     = View.VISIBLE
@@ -462,10 +473,12 @@ class SublessorHomeActivity : AppCompatActivity() {
      * sublessorId == 내 uid 인 모든 Consents 문서를 구독해서,
      * response 필드가 변경될 때마다 콜백을 받는다.
      */
+    private var consentListener: ListenerRegistration? = null
+
     private fun listenForConsentResponses() {
         val myId = auth.currentUser?.uid ?: return
 
-        db.collection("Consents")
+        consentListener = db.collection("Consents")
             .whereEqualTo("sublessorId", myId)
             .addSnapshotListener { snapshots, error ->
                 if (error != null) {
@@ -481,6 +494,7 @@ class SublessorHomeActivity : AppCompatActivity() {
                         "agree" -> onLandlordAgreed(reqId)
                         "reject" -> onLandlordRejected(reqId)
                     }
+                    consentListener?.remove()
                 }
             }
     }

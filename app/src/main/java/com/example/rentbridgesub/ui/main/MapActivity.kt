@@ -151,7 +151,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
-            startLocationUpdates()
+
+            // 1) 마지막 알려진 위치 가져와서 카메라 이동
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { loc ->
+                    if (loc != null) {
+                        val myLatLng = LatLng(loc.latitude, loc.longitude)
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 16f))
+                    }
+                    // 2) 그 다음부터 위치 업데이트 시작
+                    startLocationUpdates()
+                }
+                .addOnFailureListener {
+                    // 실패해도 위치 업데이트는 시도
+                    startLocationUpdates()
+                }
 
             loadPropertyMarkersFromFirestore()
         } else {
@@ -215,6 +229,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         val db = FirebaseFirestore.getInstance()
         val propertyList = mutableListOf<Property>()
         db.collection("Properties")
+            .whereEqualTo("status", "available")
             .get()
             .addOnSuccessListener { documents ->
                 for (doc in documents) {

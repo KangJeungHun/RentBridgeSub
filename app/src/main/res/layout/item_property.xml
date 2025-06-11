@@ -25,6 +25,32 @@
         android:layout_marginEnd="4dp"
         android:layout_marginTop="4dp"/>
 
+    <FrameLayout
+        android:id="@+id/flThumbnail"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/ivPropertyThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder"/>
+
+        <ImageButton
+            android:id="@+id/btnFavorite"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_favorite_border"
+            app:tint="@color/red"/>
+    </FrameLayout>
+
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -33,9 +59,10 @@
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintStart_toEndOf="@id/flThumbnail"
+        app:layout_constraintTop_toTopOf="@id/flThumbnail"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="8dp"/>
 
     <TextView
         android:id="@+id/tvPrice"
@@ -44,10 +71,11 @@
         android:text="가격"
         android:textColor="@color/black"
         android:textSize="16sp"
+        app:layout_constraintStart_toEndOf="@id/flThumbnail"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"/>
 
     <TextView
         android:id="@+id/tvPeriod"
@@ -56,22 +84,11 @@
         android:text="기간"
         android:textColor="@color/black"
         android:textSize="14sp"
+        app:layout_constraintStart_toEndOf="@id/flThumbnail"
         app:layout_constraintTop_toBottomOf="@id/tvPrice"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
-
-    <ImageButton
-        android:id="@+id/btnFavorite"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_favorite_border"
-        app:tint="@color/red"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvPrice"
-        android:layout_marginEnd="4dp"
-        android:layout_marginTop="4dp"/>
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"/>
 
 <!--    <Button-->
 <!--        android:id="@+id/btnChat"-->

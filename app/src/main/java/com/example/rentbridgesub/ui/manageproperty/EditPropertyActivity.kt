@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -86,7 +87,29 @@ class EditPropertyActivity : AppCompatActivity() {
         binding.etAddressDetail.setText(property.addressDetail)
         binding.etStartDate.setText(property.startDate)
         binding.etEndDate.setText(property.endDate)
-        binding.etLandlordPhone.setText(property.landlordPhone) // ✅ 추가됨
+        binding.etLandlordPhone.setText(property.landlordPhone)
+
+        // 2) 만약 이미 계약(rented)된 상태라면…
+        if (property.status == "rented") {
+            // 입력 필드 전부 비활성화
+            binding.etTitle.isEnabled           = false
+            binding.etDescription.isEnabled     = false
+            binding.etPrice.isEnabled           = false
+            binding.etAddress.isEnabled         = false
+            binding.etAddressDetail.isEnabled   = false
+            binding.etStartDate.isEnabled       = false
+            binding.etEndDate.isEnabled         = false
+            binding.etLandlordPhone.isEnabled   = false
+            binding.etImage.isEnabled           = false  // 이미지 교체도 막기
+
+            // 저장/삭제 버튼도 숨기거나 비활성화
+            binding.btnSave.visibility   = View.GONE
+            binding.btnDelete.visibility = View.GONE
+
+            // 안내 텍스트 띄우기 (선택)
+            Toast.makeText(this, "이 매물은 이미 계약 완료되어 수정 및 삭제할 수 없습니다.", Toast.LENGTH_LONG).show()
+            return
+        }
 
         binding.btnSave.setOnClickListener {
             val updatedTitle = binding.etTitle.text.toString()

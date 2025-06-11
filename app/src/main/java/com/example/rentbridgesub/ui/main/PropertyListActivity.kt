@@ -75,6 +75,7 @@ class PropertyListActivity : AppCompatActivity() {
 
     private fun loadAllProperties() {
         db.collection("Properties")
+            .whereEqualTo("status", "available")
             .get()
             .addOnSuccessListener { result ->
                 val tempList = mutableListOf<Pair<Property, Float>>()  // 거리와 함께 저장

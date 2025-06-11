@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ItemPropertyBinding
@@ -34,6 +35,17 @@ class PropertyAdapter(
     override fun onBindViewHolder(holder: PropertyViewHolder, position: Int) {
         val property = properties[position]
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+        // 이미지 로드
+        val thumbView = holder.binding.ivPropertyThumb
+        if (!property.imageUrl.isNullOrEmpty()) {
+            Glide.with(holder.itemView)
+                .load(property.imageUrl)
+                .placeholder(R.drawable.ic_placeholder)
+                .into(thumbView)
+        } else {
+            thumbView.setImageResource(R.drawable.ic_placeholder)
+        }
 
         // 1) 현재 유저의 favorites 배열에 prop.id 가 있는지 미리 조회
         db.collection("Users").document(uid)
@@ -81,8 +93,8 @@ class PropertyAdapter(
 
 
         holder.binding.tvTitle.text = property.title
-        holder.binding.tvPrice.text = property.price
-        holder.binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
+        holder.binding.tvPrice.text = "가격: ${property.price} 만원"
+        holder.binding.tvPeriod.text = "기간: ${property.startDate} ~ ${property.endDate}"
 
         // ✨ 추천 라벨 표시
         holder.binding.tvRecommended.visibility = if (property.isRecommended) View.VISIBLE else View.GONE

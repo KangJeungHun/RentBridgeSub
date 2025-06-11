@@ -5,10 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.BottomSheetMapPropertyBinding
 import com.example.rentbridgesub.ui.chat.ChatActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFragment() {
@@ -34,7 +37,7 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.tvTitle.text = property.title
         binding.tvAddress.text = property.addressMain + ' ' + property.addressDetail
-        binding.tvPrice.text = property.price
+        binding.tvPrice.text = "${property.price} 만원"
         binding.tvPeriod.text = "${property.startDate} ~ ${property.endDate}"
         binding.tvDescription.text = property.description
 
@@ -61,6 +64,55 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
             val intent = Intent(requireContext(), ChatActivity::class.java)
             intent.putExtra("receiverId", property.ownerId)  // Property 데이터에 들어있다고 가정
             startActivity(intent)
+        }
+
+        // 1) 현재 유저
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userRef = FirebaseFirestore.getInstance().collection("Users").document(uid)
+
+        FirebaseFirestore.getInstance().collection("Users").document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                when (doc.getString("userType")) {
+                    "sublessor" -> { // 전대인이면, 채팅 및 찜 가리기
+                        binding.btnFavorite.visibility = View.GONE
+
+                        if (uid == property.ownerId) {
+                            binding.btnChat.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+
+        // 2) 즐겨찾기 버튼 초기 상태 결정
+        val favBtn = binding.btnFavorite
+        userRef.get().addOnSuccessListener { doc ->
+            val favs = doc.get("favorites") as? List<String> ?: emptyList()
+            val isFav = property.id in favs
+            favBtn.setImageResource(
+                if (isFav) R.drawable.ic_favorite_filled
+                else    R.drawable.ic_favorite_border
+            )
+        }
+
+        // 3) 버튼 클릭 시 토글
+        favBtn.setOnClickListener {
+            userRef.get().addOnSuccessListener { doc ->
+                val favs = doc.get("favorites") as? List<String> ?: emptyList()
+                if (property.id in favs) {
+                    // 이미 찜→제거
+                    userRef.update("favorites", FieldValue.arrayRemove(property.id))
+                        .addOnSuccessListener {
+                            favBtn.setImageResource(R.drawable.ic_favorite_border)
+                        }
+                } else {
+                    // 찜 추가
+                    userRef.update("favorites", FieldValue.arrayUnion(property.id))
+                        .addOnSuccessListener {
+                            favBtn.setImageResource(R.drawable.ic_favorite_filled)
+                        }
+                }
+            }
         }
     }
 

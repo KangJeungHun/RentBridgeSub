@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -10,14 +11,31 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- 이미지 뷰 추가 -->
-        <ImageView
-            android:id="@+id/ivPropertyImage"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:layout_marginBottom="12dp"
-            android:background="@android:color/darker_gray" />
+            android:layout_marginBottom="20dp">
+
+            <!-- 1) 배경: 매물 이미지 -->
+            <ImageView
+                android:id="@+id/ivPropertyImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@android:color/darker_gray" />
+
+            <!-- 2) 우측 상단에 찜 버튼 -->
+            <ImageButton
+                android:id="@+id/btnFavorite"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_favorite_border"
+                app:tint="@color/red"
+                android:layout_gravity="top|end" />
+
+        </FrameLayout>
 
         <TextView android:id="@+id/tvTitle"
             android:text="제목"
@@ -32,11 +50,9 @@
             android:id="@+id/tvOwnerName"
             android:text="등록자 이름"
             android:textColor="@color/black"
-            android:textStyle="italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp" />
-
 
         <TextView android:id="@+id/tvAddress"
             android:text="주소"

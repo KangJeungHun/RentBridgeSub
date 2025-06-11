@@ -2,6 +2,7 @@ package com.example.rentbridgesub.ui.favorites
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -39,6 +40,9 @@ class FavoritesActivity : AppCompatActivity() {
         binding.recyclerViewFavorites.adapter = adapter
 
         loadFavorites()
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     private fun loadFavorites() {
@@ -81,6 +85,13 @@ class FavoritesActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     Toast.makeText(this, "찜한 매물 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> { finish(); true }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
