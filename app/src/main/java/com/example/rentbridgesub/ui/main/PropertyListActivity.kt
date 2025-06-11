@@ -38,14 +38,27 @@ class PropertyListActivity : AppCompatActivity() {
             .get()
             .addOnSuccessListener { result ->
                 propertyList.clear()
-                for (doc in result) {
-                    val property = doc.toObject(Property::class.java)
-                    propertyList.add(property)
+
+                val allProperties = result.map { it.toObject(Property::class.java) }
+
+                val recommended = allProperties.filter {
+                    it.price.toIntOrNull()?.let { price -> price < 1000000 } == true
+                }.map {
+                    it.copy(isRecommended = true) // ✨ 추천 표시
                 }
+
+                val nonRecommended = allProperties.filter {
+                    it.price.toIntOrNull()?.let { price -> price >= 1000000 } == true
+                }
+
+                // 추천 먼저 정렬
+                propertyList.addAll(recommended + nonRecommended)
+
                 adapter.notifyDataSetChanged()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "매물 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
 }
