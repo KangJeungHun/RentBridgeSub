@@ -5,7 +5,9 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.RentBridgeSub" parent="Base.Theme.RentBridgeSub" />
+    <style name="Theme.RentBridgeSub" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/blue</item>
+    </style>
 
     <style name="ShapeAppearance.App.SquareCorner" parent="">
         <item name="cornerFamily">rounded</item>

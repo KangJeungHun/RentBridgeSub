@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.OpenableColumns
+import android.text.format.DateFormat
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -18,19 +19,28 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.rentbridgesub.R
+import com.example.rentbridgesub.data.ChatSummary
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivitySublessorBinding
+import com.example.rentbridgesub.ui.chat.ChatActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
+import com.example.rentbridgesub.ui.chat.ChatSummaryAdapter
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.example.rentbridgesub.ui.property.AddPropertyActivity
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import java.net.URLEncoder
+import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
 
@@ -54,6 +64,9 @@ class SublessorHomeActivity : AppCompatActivity() {
 
     private lateinit var tvSelectContractHint: TextView
     private lateinit var tvSelectedContractName: TextView
+
+    private val summaries = mutableListOf<ChatSummary>()
+    private lateinit var summaryAdapter: ChatSummaryAdapter
 
     // 사용자가 고른 로컬 계약서 URI
     private var selectedContractUri: Uri? = null
@@ -162,6 +175,19 @@ class SublessorHomeActivity : AppCompatActivity() {
 
         listenForAgreedContracts()
         listenForConsentResponses()
+
+        val rv = findViewById<RecyclerView>(R.id.recentChatsRecycler)
+        summaryAdapter = ChatSummaryAdapter(summaries) { summary ->
+            // 클릭하면 해당 채팅방 열기
+            Intent(this, ChatActivity::class.java).also {
+                it.putExtra("receiverId", summary.otherUserId)
+                startActivity(it)
+            }
+        }
+        rv.layoutManager = LinearLayoutManager(this)
+        rv.adapter = summaryAdapter
+
+        loadLatestChatSummary()
     }
 
     private fun loadLatestProperty(uid: String, titleView: TextView, addressView: TextView, priceView: TextView) {
@@ -385,6 +411,60 @@ class SublessorHomeActivity : AppCompatActivity() {
     private fun onLandlordRejected(reqId: String) {
         Toast.makeText(this, "임대인이 거부했습니다.", Toast.LENGTH_LONG).show()
         // TODO: 여기서 원하는 UI 업데이트 코드 추가
+    }
+
+    private fun loadLatestChatSummary() {
+        val me = auth.currentUser!!.uid
+        db.collection("ChatRooms")
+            .whereArrayContains("users", me)
+            .get()
+            .addOnSuccessListener { roomsSnap ->
+                summaries.clear()
+                // 1) 모든 방 마지막 메시지 비동기 조회
+                val tasks = roomsSnap.documents.map { roomDoc ->
+                    val roomId = roomDoc.id
+                    roomDoc.reference
+                        .collection("Messages")
+                        .orderBy("timestamp", Query.Direction.DESCENDING)
+                        .limit(1)
+                        .get()
+                        .continueWith { it.result?.documents?.firstOrNull() to roomId }
+                }
+                Tasks.whenAllSuccess<Pair<DocumentSnapshot?, String>>(tasks)
+                    .addOnSuccessListener { results ->
+                        // 2) 결과마다 ChatSummary 생성
+                        results.forEach { (msgDoc, roomId) ->
+                            msgDoc?.let { doc ->
+                                val other = roomId.split("-").first { it != me }
+                                val summary = ChatSummary(
+                                    chatRoomId    = roomId,
+                                    otherUserId   = other,
+                                    lastMessage   = doc.getString("message")
+                                        ?: if (doc.getString("fileUrl") != null) "파일을 보냈습니다."
+                                        else if(doc.getString("imageUrl")!=null) "사진을 보냈습니다."
+                                        else "",
+                                    timestamp     = doc.getLong("timestamp") ?: 0L
+                                )
+                                summaries.add(summary)
+                            }
+                        }
+                        // 3) User 정보 채우고 정렬
+                        val userTasks = summaries.map { summary ->
+                            db.collection("Users").document(summary.otherUserId).get()
+                                .continueWith { task ->
+                                    val userDoc = task.result!!
+                                    summary.otherUserName = userDoc.getString("name") ?: "알 수 없음"
+                                    summary.avatarUrl     = userDoc.getString("avatarUrl") ?: ""
+                                    summary
+                                }
+                        }
+                        Tasks.whenAllSuccess<ChatSummary>(userTasks)
+                            .addOnSuccessListener {
+                                summaries.sortByDescending { it.timestamp }
+                                summaryAdapter.notifyDataSetChanged()
+                            }
+                    }
+            }
     }
 
     override fun onBackPressed() {

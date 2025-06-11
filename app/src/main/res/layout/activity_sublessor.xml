@@ -31,6 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="홍길동님, 환영합니다!"
+                android:textColor="@color/black"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp" />
@@ -44,6 +45,7 @@
 
                 <TextView
                     android:text="계약 현황"
+                    android:textColor="@color/black"
                     android:textStyle="bold"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -89,6 +91,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="제목: "
+                        android:textColor="@color/black"
                         android:textStyle="bold"
                         android:textSize="16sp"
                         android:layout_marginBottom="8dp"/>
@@ -98,13 +101,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="시작일: "
+                        android:textColor="@color/black"
                         android:layout_marginBottom="4dp"/>
 
                     <TextView
                         android:id="@+id/tvEndDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="종료일: "/>
+                        android:text="종료일: "
+                        android:textColor="@color/black"/>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -118,6 +123,7 @@
 
                 <TextView
                     android:text="등록한 매물"
+                    android:textColor="@color/black"
                     android:textStyle="bold"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -191,17 +197,20 @@
                         <TextView
                             android:id="@+id/tvPropertyTitle"
                             android:text="등록한 매물 제목"
+                            android:textColor="@color/black"
                             android:textStyle="bold"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
                             android:id="@+id/tvPropertyAddress"
                             android:text="주소"
+                            android:textColor="@color/black"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                         <TextView
                             android:id="@+id/tvPropertyPrice"
                             android:text="보증금/월세"
+                            android:textColor="@color/black"
                             android:layout_height="wrap_content"
                             android:layout_width="wrap_content"/>
                     </LinearLayout>
@@ -352,7 +361,8 @@
 
             <!-- 채팅 섹션 -->
             <TextView
-                android:text="문의 온 채팅"
+                android:text="최근 문의 온 채팅"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:drawableLeft="@drawable/ic_chat"
                 android:drawablePadding="8dp"
@@ -360,54 +370,12 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content" />
 
-            <androidx.cardview.widget.CardView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recentChatsRecycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardElevation="4dp"
-                app:cardCornerRadius="12dp"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
-
-                    <!-- 썸네일 이미지 -->
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_placeholder"
-                        android:layout_marginEnd="12dp"
-                        android:scaleType="centerCrop"
-                        android:background="@drawable/ic_launcher_background"/>
-
-                    <!-- 텍스트 정보 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_weight="1">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="김철수"
-                            android:textStyle="bold"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/tvUserAndMessage"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="보증금 협의되나요?"
-                            android:textSize="14sp"
-                            android:layout_marginTop="4dp"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-
+                android:overScrollMode="never"
+                android:layout_marginBottom="16dp"/>
         </LinearLayout>
     </ScrollView>
 
