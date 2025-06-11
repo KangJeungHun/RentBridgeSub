@@ -31,6 +31,7 @@ class PropertyListActivity : AppCompatActivity() {
         adapter = PropertyAdapter(propertyList) { property ->
             val intent = Intent(this, PropertyDetailActivity::class.java)
             intent.putExtra("property", property)
+            intent.putExtra("isRecommended", property.isRecommended)
             startActivity(intent)
         }
 
