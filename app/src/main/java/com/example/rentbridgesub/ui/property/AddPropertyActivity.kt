@@ -35,7 +35,11 @@ class AddPropertyActivity : AppCompatActivity() {
 
     private val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         selectedImageUri = uri
-        binding.ivProperty.setImageURI(uri)
+        binding.ivProperty.apply {
+            clearColorFilter()              // ColorFilter 해제
+            imageTintList = null            // Tint 해제 (AndroidX)
+            setImageURI(uri)                // 사진 올리기
+        }
     }
 
     private val addressLauncher = registerForActivityResult(
