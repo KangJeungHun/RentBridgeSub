@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
                     val targetActivity = if (userType == "sublessor") {
                         SublessorHomeActivity::class.java
                     } else {
-                        SublesseeHomeActivity::class.java
+                        MapActivity::class.java
                     }
 
                     val intent = Intent(this, targetActivity)

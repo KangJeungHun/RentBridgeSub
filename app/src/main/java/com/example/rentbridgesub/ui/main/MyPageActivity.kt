@@ -25,6 +25,7 @@ import com.example.rentbridgesub.databinding.ActivityMyPageBinding
 import com.example.rentbridgesub.ui.auth.LoginActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.example.rentbridgesub.ui.editprofile.EditProfileActivity
+import com.example.rentbridgesub.ui.favorites.FavoritesActivity
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -70,10 +71,31 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
+        binding.btnMyFavorites.setOnClickListener {
+            startActivity(Intent(this, FavoritesActivity::class.java))
+        }
+
         binding.btnManageMyProperties.setOnClickListener {
             val intent = Intent(this, ManagePropertiesActivity::class.java)
             startActivity(intent)
         }
+
+        val homeBtn = findViewById<LinearLayout>(R.id.navHome)
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("Users").document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                when (doc.getString("userType")) {
+                    "sublessee" -> {
+                        // 전차인일 때 홈 버튼 숨기기
+                        homeBtn.visibility = View.GONE
+                    }
+                    else -> {
+                        // 전대인이나 기타일 땐 홈 버튼 보이기
+                        homeBtn.visibility = View.VISIBLE
+                    }
+                }
+            }
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))

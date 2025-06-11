@@ -72,7 +72,7 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
       longitude: parseFloat(longitude)
     };
 
-    await admin.firestore().collection("Properties").add(newProperty);
+    await admin.firestore().collection("Properties").doc(id).create(newProperty);
     res.status(200).json({ message: "매물 등록 성공" });
 
   } catch (error) {

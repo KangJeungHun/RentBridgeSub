@@ -6,11 +6,14 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import android.os.Looper
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -86,7 +89,44 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        val btnViewAll = findViewById<TextView>(R.id.btnViewAllProperties)
+        btnViewAll.visibility = View.GONE
+        btnViewAll.setOnClickListener {
+            startActivity(Intent(this, PropertyListActivity::class.java))
+        }
 
+        // 사용자 타입에 따라 버튼 노출 제어
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("Users").document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                when (doc.getString("userType")) {
+                    "sublessee" -> {
+                        // 전차인일 때만 전체 매물 보기
+                        btnViewAll.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        // 전대인은 숨김
+                        btnViewAll.visibility = View.GONE
+                    }
+                }
+            }
+
+        val homeBtn = findViewById<LinearLayout>(R.id.navHome)
+        FirebaseFirestore.getInstance().collection("Users").document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                when (doc.getString("userType")) {
+                    "sublessee" -> {
+                        // 전차인일 때 홈 버튼 숨기기
+                        homeBtn.visibility = View.GONE
+                    }
+                    else -> {
+                        // 전대인이나 기타일 땐 홈 버튼 보이기
+                        homeBtn.visibility = View.VISIBLE
+                    }
+                }
+            }
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
@@ -129,6 +169,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             { response ->
                 val json = JSONObject(response)
                 val documents = json.getJSONArray("documents")
+
                 if (documents.length() > 0) {
                     val first = documents.getJSONObject(0)
                     val lat = first.getString("y").toDouble()
@@ -136,18 +177,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     val category = first.optString("category_group_code", "")
 
-                    // 서울 같은 넓은 지역을 보기 좋게 보여주기 위해 bounds 적용
-                    val bounds = LatLngBounds(
-                        LatLng(lat - 0.01, lng - 0.01),  // 남서
-                        LatLng(lat + 0.01, lng + 0.01)   // 북동
-                    )
-
-                    val zoomLevel = when (category) {
-                        "SW8", "BK9", "MT1", "OL7" -> 17f  // 지하철, 은행, 마트 등 -> 더 확대
-                        else -> 14f  // 일반 지역
+                    // 카테고리별로 오프셋(도)와 줌 레벨 결정
+                    val (dLat, dLng, zoom) = when {
+                        category.startsWith("AD") -> Triple(0.05, 0.05, 11f)  // 행정구역
+                        category == "SW8"        -> Triple(0.02, 0.02, 15f)  // 지하철역
+                        category == "BK9"        -> Triple(0.02, 0.02, 15f)  // 은행 등 공공기관
+                        category == "MT1"        -> Triple(0.01, 0.01, 16f)  // 마트/슈퍼
+                        category == "PO3"        -> Triple(0.005, 0.005, 17f) // 건물(오피스텔 등)
+                        else                      -> Triple(0.01, 0.01, 14f)  // 일반 장소
                     }
 
-                    onSuccess(bounds, zoomLevel)
+                    // LatLngBounds 생성
+                    val bounds = LatLngBounds(
+                        LatLng(lat - dLat, lng - dLng),
+                        LatLng(lat + dLat, lng + dLng)
+                    )
+
+                    onSuccess(bounds, zoom)
                 } else {
                     Toast.makeText(this, "결과가 없습니다", Toast.LENGTH_SHORT).show()
                 }

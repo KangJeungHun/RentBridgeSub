@@ -48,6 +48,7 @@
         <activity android:name=".ui.chat.FullImageActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".ui.WebView.WebViewActivity" />
+        <activity android:name=".ui.favorites.FavoritesActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
