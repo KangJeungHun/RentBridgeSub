@@ -68,6 +68,7 @@ exports.registerProperty = functions.https.onRequest(async (req, res) =>{
       endDate,
       imageUrl,
       landlordPhone,
+      status: "available",
       latitude: parseFloat(latitude),
       longitude: parseFloat(longitude)
     };
