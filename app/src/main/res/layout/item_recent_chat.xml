@@ -30,6 +30,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="상대방 이름"
+            android:drawablePadding="4dp"
+            android:drawableEnd="@null"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold"

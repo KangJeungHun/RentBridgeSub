@@ -49,6 +49,7 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".ui.WebView.WebViewActivity" />
         <activity android:name=".ui.favorites.FavoritesActivity" />
+        <activity android:name=".ui.editprofile.StudentProfileActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

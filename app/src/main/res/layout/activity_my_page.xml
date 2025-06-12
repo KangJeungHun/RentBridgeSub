@@ -60,6 +60,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="홍길동"
+                            android:drawablePadding="4dp"
+                            android:drawableEnd="@null"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             android:textColor="@color/black" />
@@ -121,6 +123,15 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVerifyStudent"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="학생 인증하기"
+                        android:textColor="@color/blue"
+                        android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnManageMyProperties"

@@ -27,6 +27,7 @@ import com.example.rentbridgesub.databinding.ActivityMyPageBinding
 import com.example.rentbridgesub.ui.auth.LoginActivity
 import com.example.rentbridgesub.ui.chat.ChatListActivity
 import com.example.rentbridgesub.ui.editprofile.EditProfileActivity
+import com.example.rentbridgesub.ui.editprofile.StudentProfileActivity
 import com.example.rentbridgesub.ui.favorites.FavoritesActivity
 import com.example.rentbridgesub.ui.manageproperty.ManagePropertiesActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -79,6 +80,10 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
+        binding.btnVerifyStudent.setOnClickListener {
+            startActivity(Intent(this, StudentProfileActivity::class.java))
+        }
+
         binding.btnMyFavorites.setOnClickListener {
             startActivity(Intent(this, FavoritesActivity::class.java))
         }
@@ -102,6 +107,17 @@ class MyPageActivity : AppCompatActivity() {
                         // 전대인이나 기타일 땐 홈 버튼 보이기
                         homeBtn.visibility = View.VISIBLE
                     }
+                }
+
+                val tvUserName = findViewById<TextView>(R.id.tvUserName)
+
+                // 3) **여기**: 학생 인증 여부에 따라 뱃지 붙이기
+                if (doc.getBoolean("isStudent") == true) {
+                    tvUserName.setCompoundDrawablesWithIntrinsicBounds(
+                        0, 0, R.drawable.ic_badge_student, 0
+                    )
+                } else {
+                    tvUserName.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
                 }
             }
 

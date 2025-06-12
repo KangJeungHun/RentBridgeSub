@@ -8,8 +8,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.OpenableColumns
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.format.DateFormat
+import android.text.style.ImageSpan
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -22,6 +26,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -155,9 +160,47 @@ class SublessorHomeActivity : AppCompatActivity() {
 
         FirebaseFirestore.getInstance().collection("Users").document(uid!!)
             .get()
-            .addOnSuccessListener {
-                val name = it.getString("name") ?: "사용자"
-                nameTextView.text = "$name 님, 환영합니다!"
+            .addOnSuccessListener { doc ->
+                val name = doc.getString("name") ?: "사용자"
+                val isStudent = doc.getBoolean("isStudent") == true
+
+                if (isStudent) {
+                    // 1) 기본 텍스트
+                    val welcome = " 님, 환영합니다!"
+                    val fullText = name + " " + welcome   // 이름 뒤에 빈칸 하나를 미리 추가
+
+                    // 2) SpannableStringBuilder 생성
+                    val ssb = SpannableStringBuilder(fullText)
+
+                    // 3) 아이콘을 넣을 위치 계산 (이름 바로 뒤)
+                    val iconIndexStart = name.length
+                    val iconIndexEnd   = iconIndexStart + 1  // 빈칸 한 글자 자리
+
+                    val badgeDp = 28
+                    val badgePx = TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        badgeDp.toFloat(),
+                        resources.displayMetrics
+                    ).toInt()
+
+                    // 4) Drawable 준비
+                    val drawable = ContextCompat.getDrawable(this, R.drawable.ic_badge_student)!!
+                    drawable.setBounds(0, 0, badgePx, badgePx)
+
+                    // 5) ImageSpan 설정
+                    ssb.setSpan(
+                        ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM),
+                        iconIndexStart,
+                        iconIndexEnd,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+
+                    // 6) TextView에 적용
+                    nameTextView.text = ssb
+
+                } else {
+                    nameTextView.text = "$name 님, 환영합니다!"
+                }
             }
 
         findViewById<LinearLayout>(R.id.navMap).setOnClickListener {
@@ -231,7 +274,7 @@ class SublessorHomeActivity : AppCompatActivity() {
             }
         // **리스너 끝**
 
-//        loadLatestProperty(uid, titleView, addressView, priceView)
+        loadLatestProperty(uid, titleView, addressView, priceView)
 
         findViewById<LinearLayout>(R.id.navHome).setOnClickListener {
             // stay here
@@ -345,7 +388,7 @@ class SublessorHomeActivity : AppCompatActivity() {
 
                     titleView.text = doc.getString("title")
                     addressView.text = doc.getString("addressMain") + ' ' + doc.getString("addressDetail")
-                    priceView.text = doc.getString("price") + " 만원"
+                    priceView.text = "${doc.getString("price")} 만원"
 
                     val imageUrl = doc.getString("imageUrl")
                     if (!imageUrl.isNullOrEmpty()) {

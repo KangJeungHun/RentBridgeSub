@@ -1,101 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
-        android:id="@+id/tvRecommended"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="추천"
-        android:textColor="@android:color/white"
-        android:background="@android:color/holo_red_dark"
-        android:padding="4dp"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="8dp" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/ivDetailImage"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView
-        android:id="@+id/tvDetailTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="제목"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/ivDetailImage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="20dp">
 
-    <TextView
-        android:id="@+id/tvDetailDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="설명"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+            <!-- 1) 배경: 매물 이미지 -->
+            <ImageView
+                android:id="@+id/ivPropertyImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@android:color/darker_gray" />
 
-    <TextView
-        android:id="@+id/tvDetailAddress"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="주소"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailDescription"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+            <TextView
+                android:id="@+id/tvRecommended"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="추천"
+                android:textColor="@android:color/white"
+                android:background="@android:color/holo_red_dark"
+                android:padding="4dp"
+                android:textSize="12sp"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_margin="8dp" />
 
-    <TextView
-        android:id="@+id/tvDetailPeriod"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="기간"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailAddress"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+            <!-- 2) 우측 상단에 찜 버튼 -->
+            <ImageButton
+                android:id="@+id/btnFavorite"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_favorite_border"
+                app:tint="@color/red"
+                android:layout_gravity="top|end" />
 
-    <TextView
-        android:id="@+id/tvDetailPrice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="가격"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailPeriod"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        </FrameLayout>
 
-    <!-- ⭐️ 채팅하기 버튼 추가 -->
-    <Button
-        android:id="@+id/btnChat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="문의하기"
-        android:textColor="@color/white"
-        app:backgroundTint="@color/blue"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailPrice"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        <TextView android:id="@+id/tvTitle"
+            android:text="제목"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvOwnerName"
+            android:text="등록자 이름"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <TextView android:id="@+id/tvAddress"
+            android:text="주소"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView android:id="@+id/tvPrice"
+            android:text="가격"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView android:id="@+id/tvPeriod"
+            android:text="기간"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- 🔽 상세 설명 추가 -->
+        <TextView
+            android:id="@+id/tvDescription"
+            android:text="상세 설명"
+            android:textColor="@color/black"
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- 🔽 채팅하기 버튼 -->
+        <Button
+            android:id="@+id/btnChat"
+            android:text="문의하기"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            app:backgroundTint="@color/blue"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </LinearLayout>
+</ScrollView>

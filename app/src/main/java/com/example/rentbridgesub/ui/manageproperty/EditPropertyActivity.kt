@@ -10,6 +10,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.ActivityEditPropertyBinding
 import com.example.rentbridgesub.ui.WebView.WebViewActivity
@@ -54,10 +57,9 @@ class EditPropertyActivity : AppCompatActivity() {
         Log.d("EditActivity", "받은 property.id = ${property.id}")
 
         if (property.imageUrl.isNotEmpty()) {
-            Picasso.get()
+            Glide.with(binding.etImage.context)
                 .load(property.imageUrl)
-                .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-                .networkPolicy(NetworkPolicy.NO_CACHE, NetworkPolicy.NO_STORE)
+                .placeholder(R.drawable.ic_placeholder)
                 .into(binding.etImage)
         }
 

@@ -2,9 +2,15 @@ package com.example.rentbridgesub.ui.main
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ImageSpan
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.Property
 import com.example.rentbridgesub.databinding.BottomSheetMapPropertyBinding
@@ -47,7 +53,46 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
             .get()
             .addOnSuccessListener { document ->
                 val name = document.getString("name") ?: "이름 없음"
-                binding.tvOwnerName.text = "등록자: $name"
+                val isStudent = document.getBoolean("isStudent") == true
+
+                // 1) 기본 텍스트
+                val prefix = "등록자: "
+                val fullText = prefix + name
+
+                // 2) SpannableStringBuilder 로 생성
+                val ssb = SpannableStringBuilder(fullText)
+
+                // 3) 학생 인증된 경우에만 badge 삽입
+                if (isStudent) {
+                    // badge 를 넣을 위치: prefix + name 바로 뒤
+                    val iconPosStart = prefix.length + name.length
+                    val iconPosEnd   = iconPosStart + 1
+
+                    val badgeDp = 20
+                    val badgePx = TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP,
+                        badgeDp.toFloat(),
+                        resources.displayMetrics
+                    ).toInt()
+
+                    // 4) Drawable 준비
+                    val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_badge_student)!!
+                    drawable.setBounds(0, 0, badgePx, badgePx)
+
+                    // 5) 이름 뒤에 빈 칸 하나 넣기
+                    ssb.insert(iconPosStart, " ")
+
+                    // 6) ImageSpan 설정
+                    ssb.setSpan(
+                        ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM),
+                        iconPosStart,
+                        iconPosEnd,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+
+                // 7) TextView 에 적용
+                binding.tvOwnerName.text = ssb
             }
             .addOnFailureListener {
                 binding.tvOwnerName.text = "등록자 정보를 불러올 수 없음"
@@ -55,7 +100,10 @@ class PropertyBottomSheet(private val property: Property) : BottomSheetDialogFra
 
         // 🔽 이미지 로드
         if (property.imageUrl.isNotEmpty()) {
-            com.squareup.picasso.Picasso.get().load(property.imageUrl).into(binding.ivPropertyImage)
+            Glide.with(this)
+                .load(property.imageUrl)
+                .placeholder(R.drawable.ic_placeholder)
+                .into(binding.ivPropertyImage)
         } else {
             binding.ivPropertyImage.setImageResource(android.R.color.darker_gray)
         }

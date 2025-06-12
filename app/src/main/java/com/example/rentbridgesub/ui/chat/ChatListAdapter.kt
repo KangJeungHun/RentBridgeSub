@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rentbridgesub.R
 import com.example.rentbridgesub.data.ChatListItem
 import com.example.rentbridgesub.databinding.ItemChatListBinding
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ChatListAdapter(
     private val chatRooms: List<ChatListItem>,
@@ -31,6 +33,37 @@ class ChatListAdapter(
     override fun onBindViewHolder(holder: ChatListViewHolder, position: Int) {
         val item = chatRooms[position]
         holder.binding.tvUserId.text = item.userName
+
+        FirebaseFirestore.getInstance()
+            .collection("Users")
+            .whereEqualTo("uid", item.userId)
+            .get()
+            .addOnSuccessListener { querySnap ->
+                if (!querySnap.isEmpty) {
+                    // 첫 번째 문서를 꺼내서
+                    val userDoc = querySnap.documents[0]
+                    // DocumentSnapshot에서 getString() 사용
+                    val name = userDoc.getString("name") ?: "사용자"
+
+                    // 뷰에 텍스트 세팅
+                    holder.binding.tvUserId.text = name
+
+                    // 학생 인증 배지 처리
+                    if (userDoc.getBoolean("isStudent") == true) {
+                        holder.binding.tvUserId.setCompoundDrawablesWithIntrinsicBounds(
+                            0, 0, R.drawable.ic_badge_student, 0
+                        )
+                        holder.binding.tvUserId.compoundDrawablePadding = 8
+                    } else {
+                        holder.binding.tvUserId.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+                    }
+                } else {
+                    holder.binding.tvUserId.text = "알 수 없음"
+                }
+            }
+            .addOnFailureListener {
+                holder.binding.tvUserId.text = "불러오기 실패"
+            }
 
         // 마지막 메시지 텍스트 설정
         val displayMessage = when {
