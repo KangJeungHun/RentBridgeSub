@@ -152,6 +152,8 @@ class MyPageActivity : AppCompatActivity() {
                 when (userType) {
                     "sublessor" -> {
                         binding.btnMyFavorites.visibility = View.GONE
+                        binding.cardNoContract.visibility = View.GONE
+                        binding.tvcardContractStatus.visibility = View.GONE
                     }
 
                     "sublessee" -> {
@@ -185,7 +187,7 @@ class MyPageActivity : AppCompatActivity() {
 
         FirebaseFirestore.getInstance()
             .collection("Consents")
-            .whereEqualTo("sublessorId", uid)
+            .whereEqualTo("sublesseeId", uid)
             .whereEqualTo("response", "agree")
             .limit(1)
             .addSnapshotListener { snaps, error ->

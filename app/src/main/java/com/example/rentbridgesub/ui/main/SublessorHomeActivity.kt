@@ -345,7 +345,7 @@ class SublessorHomeActivity : AppCompatActivity() {
 
                     titleView.text = doc.getString("title")
                     addressView.text = doc.getString("addressMain") + ' ' + doc.getString("addressDetail")
-                    priceView.text = doc.getString("price")
+                    priceView.text = doc.getString("price") + " 만원"
 
                     val imageUrl = doc.getString("imageUrl")
                     if (!imageUrl.isNullOrEmpty()) {
@@ -576,7 +576,16 @@ class SublessorHomeActivity : AppCompatActivity() {
 
     /** 임대인이 동의했을 때 호출 */
     private fun onLandlordAgreed(reqId: String) {
-        Toast.makeText(this, "임대인이 동의했습니다!", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "임대인이 동의하였습니다!", Toast.LENGTH_LONG).show()
+
+        // 1) 전송 버튼 비활성화
+        btnContactLandlord.isEnabled = false
+        btnContactLandlord.text = "임대인이 동의하였습니다!"
+
+        // 2) 선택 UI도 같이 숨기고 싶으면
+        tvSelectContractHint.visibility   = View.GONE
+        tvSelectedContractName.visibility = View.GONE
+        spinnerTenants.isEnabled          = false
         // TODO: 여기서 원하는 UI 업데이트 코드 추가
     }
 

@@ -159,6 +159,7 @@
                 android:layout_marginBottom="8dp">
 
                 <TextView
+                    android:id="@+id/tvcardContractStatus"
                     android:text="계약 현황"
                     android:textColor="@color/black"
                     android:textStyle="bold"
