@@ -11,9 +11,11 @@ import android.provider.OpenableColumns
 import android.text.format.DateFormat
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -57,7 +59,7 @@ class SublessorHomeActivity : AppCompatActivity() {
     private val propertyList = mutableListOf<Property>()
 
     private lateinit var cardNoContract: CardView
-    private lateinit var layoutContractStatus: View
+    private lateinit var cardContractStatus: View
     private lateinit var tvContractedPropertyTitle: TextView
     private lateinit var tvStartDate: TextView
     private lateinit var tvEndDate: TextView
@@ -67,6 +69,7 @@ class SublessorHomeActivity : AppCompatActivity() {
 
     private lateinit var tvSelectContractHint: TextView
     private lateinit var tvSelectedContractName: TextView
+    private lateinit var btnContactLandlord: Button
 
     private val summaries = mutableListOf<ChatSummary>()
     private lateinit var summaryAdapter: ChatSummaryAdapter
@@ -95,6 +98,11 @@ class SublessorHomeActivity : AppCompatActivity() {
     private var myPropertyId: String? = null
     private var propertyListener: ListenerRegistration? = null
 
+    private lateinit var spinnerTenants: Spinner
+    private val tenantOptions = mutableListOf<Pair<String, String>>()
+// Pair<UID, DisplayName>
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sublessor)
@@ -110,6 +118,10 @@ class SublessorHomeActivity : AppCompatActivity() {
         btnAddProperty = findViewById(R.id.btnAddProperty)
         registeredPropertyCard = findViewById(R.id.registeredPropertyCard)
         cardNoRegisteredProperty = findViewById(R.id.cardNoRegisteredProperty)
+        tvSelectContractHint    = findViewById(R.id.tvSelectContractHint)
+        tvSelectedContractName  = findViewById(R.id.tvSelectedContractName)
+        spinnerTenants          = findViewById(R.id.spinnerTenants)
+        btnContactLandlord      = findViewById(R.id.btnContactLandlord)
 
         editPropertyLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -236,19 +248,65 @@ class SublessorHomeActivity : AppCompatActivity() {
             pickContractLauncher.launch("*/*")  // 모든 파일 중에서 선택, PDF 만 막으려면 "application/pdf"
         }
 
+        // 1) 사용자 UID
+        val me = auth.currentUser!!.uid
+
+        // 2) ChatRooms 컬렉션에서, 내가 속한 1:1 방들을 불러와서
+        db.collection("ChatRooms")
+            .whereArrayContains("users", me)
+            .get()
+            .addOnSuccessListener { snaps ->
+                val tasks = snaps.documents.map { doc ->
+                    // 방 ID에서 otherUID 추출 (id 형식이 "me-other")
+                    val otherId = doc.id.split("-").first { it != me }
+                    // 사용자 이름 조회
+                    db.collection("Users").document(otherId).get()
+                        .continueWith { it.result!!.getString("name")!! to otherId }
+                }
+                Tasks.whenAllSuccess<Pair<String,String>>(tasks)
+                    .addOnSuccessListener { results ->
+                        tenantOptions.clear()
+                        results.forEach { (name, uid) ->
+                            tenantOptions.add(uid to name)
+                        }
+                        val namesWithHint = listOf("선택:") + tenantOptions.map { it.second }
+                        val adapter = ArrayAdapter(
+                            this,
+                            android.R.layout.simple_spinner_item,
+                            namesWithHint // 이름 리스트
+                        ).apply {
+                            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        }
+                        spinnerTenants.adapter = adapter
+                    }
+            }
+
         findViewById<Button>(R.id.btnContactLandlord).setOnClickListener {
+            val pos = spinnerTenants.selectedItemPosition
+            // pos == 0 이면 힌트(미선택) 상태
+            if (pos <= 0) {
+                Toast.makeText(this, "전차인을 선택하세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val uri = selectedContractUri
             Log.d("ContactLandlord", "selectedContractUri=$uri, propertyList.size=${propertyList.size}")
             if (uri != null && propertyList.isNotEmpty()) {
+                // 스피너에서 선택된 인덱스 → tenantOptions 에서 UID 꺼내기
+                val pos = spinnerTenants.selectedItemPosition
+                Log.d("tenantOptions", "tenantOptions.size_pos=$tenantOptions.size")
+
+                val sublesseeId = tenantOptions[pos - 1].first
+
                 // 예시로 첫 매물에 대한 요청
-                uploadAndSendContract(uri, propertyList[0])
+                uploadAndSendContract(uri, propertyList[0], sublesseeId)
             } else {
                 Toast.makeText(this, "파일을 선택하거나 매물을 등록했는지 확인하세요", Toast.LENGTH_SHORT).show()
             }
         }
 
         cardNoContract = findViewById(R.id.cardNoContract)
-        layoutContractStatus = findViewById(R.id.cardContractStatus)
+        cardContractStatus = findViewById(R.id.cardContractStatus)
         tvContractedPropertyTitle = findViewById(R.id.tvContractedPropertyTitle)
         tvStartDate  = findViewById(R.id.tvStartDate)
         tvEndDate    = findViewById(R.id.tvEndDate)
@@ -340,7 +398,7 @@ class SublessorHomeActivity : AppCompatActivity() {
                             tvContractedPropertyTitle.text = "제목: $title"
                             tvStartDate.text = "시작일: ${propDoc.getString("startDate")}"
                             tvEndDate.text   = "종료일: ${propDoc.getString("endDate")}"
-                            layoutContractStatus.visibility = View.VISIBLE
+                            cardContractStatus.visibility = View.VISIBLE
                             cardNoContract.visibility = View.GONE
                         }
 
@@ -355,7 +413,7 @@ class SublessorHomeActivity : AppCompatActivity() {
                             Log.e("StatusUpdate", "status 업데이트 실패", e)
                         }
                 } else {
-                    layoutContractStatus.visibility = View.GONE
+                    cardContractStatus.visibility = View.GONE
                     cardNoContract.visibility     = View.VISIBLE
                 }
             }
@@ -404,7 +462,7 @@ class SublessorHomeActivity : AppCompatActivity() {
     //
     // --------------------------------------
     // 4) 업로드 → SMS 발송
-    private fun uploadAndSendContract(uri: Uri, property: Property) {
+    private fun uploadAndSendContract(uri: Uri, property: Property, sublesseeId: String) {
         // a) 고유 요청 ID 생성
         val reqId = UUID.randomUUID().toString()
         // b) Firebase Storage 경로
@@ -414,59 +472,76 @@ class SublessorHomeActivity : AppCompatActivity() {
             .continueWithTask { it.result!!.storage.downloadUrl }
             .addOnSuccessListener { downloadUrl ->
                 // d) Firestore 에 요청 정보 저장
-                saveConsentRequest(reqId, property, downloadUrl.toString())
+                saveConsentRequest(reqId, property, downloadUrl.toString(), sublesseeId)
             }
             .addOnFailureListener {
                 Toast.makeText(this, "업로드 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun saveConsentRequest(reqId: String, property: Property, fileUrl: String) {
-        val currentUser = auth.currentUser?.uid ?: return
+    private fun saveConsentRequest(reqId: String, property: Property, fileUrl: String, sublesseeId: String) {
+        val sublessorId = auth.currentUser?.uid ?: return
         db.collection("Consents").document(reqId)
             .set(
                 mapOf(
                     "propertyId" to property.id,
-                    "sublessorId" to currentUser,
+                    "sublessorId" to sublessorId,
+                    "sublesseeId"  to sublesseeId,
                     "fileUrl" to fileUrl,
                     "requestedAt" to FieldValue.serverTimestamp(),
                     "response" to "pending"
                 )
             )
             .addOnSuccessListener {
-                sendConsentSms(reqId, property, fileUrl)
+                sendConsentSms(reqId, property, fileUrl, sublessorId, sublesseeId)
             }
             .addOnFailureListener {
                 Toast.makeText(this, "요청 저장 실패: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    private fun sendConsentSms(reqId: String, property: Property, fileUrl: String) {
-        val phoneNumber = property.landlordPhone
-            ?.replace("-", "") ?: return
+    private fun sendConsentSms(reqId: String, property: Property, fileUrl: String, sublessorId: String, sublesseeId: String) {
+        // 1) 두 사용자 문서 읽기
+        val userColl = db.collection("Users")
+        val sublessorTask = userColl.document(sublessorId).get()
+        val sublesseeTask = userColl.document(sublesseeId).get()
 
-        val message = """
-            [RentBridgeSub] 전대차 계약서 검토 요청
-            매물: ${property.title}
-            주소: ${property.addressMain} ${property.addressDetail}
-            계약서 링크: $fileUrl
-            동의/거부 버튼 누르시려면 다음 링크를 눌러주세요! --> https://rentbridgesub.web.app/consent.html?req=$reqId&file=${
-            URLEncoder.encode(
-                fileUrl,
-                "UTF-8"
-            )
-        }
-        """.trimIndent()
+        Tasks.whenAllSuccess<DocumentSnapshot>(sublessorTask, sublesseeTask)
+            .addOnSuccessListener { results ->
+                val sublessorName = (results[0].getString("name") ?: "전대인")
+                val sublesseeName = (results[1].getString("name") ?: "전차인")
 
-        val smsIntent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("smsto:${Uri.encode(phoneNumber)}")
-            putExtra("sms_body", message)
-        }
-        if (smsIntent.resolveActivity(packageManager) != null) {
-            startActivity(smsIntent)
-        } else {
-            Toast.makeText(this, "SMS 앱이 없습니다.", Toast.LENGTH_SHORT).show()
-        }
+                // 2) SMS 본문 구성
+                val phoneNumber = property.landlordPhone
+                    ?.replace("-", "") ?: return@addOnSuccessListener
+
+                val message = """
+                [RentBridgeSub] 전대차 계약서 검토 요청
+                매물: ${property.title}
+                주소: ${property.addressMain} ${property.addressDetail}
+                전대인: $sublessorName
+                전차인: $sublesseeName
+                계약서 링크: $fileUrl
+                동의/거부 하시려면 오른쪽 링크를 눌러주세요!: https://rentbridgesub.web.app/consent.html?req=$reqId&file=${
+                    URLEncoder.encode(fileUrl, "UTF-8")
+                }
+            """.trimIndent()
+
+                // 3) SMS 인텐트 전송
+                Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("smsto:${Uri.encode(phoneNumber)}")
+                    putExtra("sms_body", message)
+                }.also { smsIntent ->
+                    if (smsIntent.resolveActivity(packageManager) != null) {
+                        startActivity(smsIntent)
+                    } else {
+                        Toast.makeText(this, "SMS 앱이 없습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "사용자 정보를 불러오는 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show()
+            }
     }
 
     /**

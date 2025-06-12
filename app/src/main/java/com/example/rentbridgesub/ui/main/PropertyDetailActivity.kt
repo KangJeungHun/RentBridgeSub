@@ -29,7 +29,7 @@ class PropertyDetailActivity : AppCompatActivity() {
             binding.tvDetailDescription.text = prop.description
             binding.tvDetailAddress.text = prop.addressMain + ' ' + prop.addressDetail
             binding.tvDetailPeriod.text = "${prop.startDate} ~ ${prop.endDate}"
-            binding.tvDetailPrice.text = prop.price
+            binding.tvDetailPrice.text = "${prop.price} 만원"
 
             if (prop.imageUrl.isNotEmpty()) {
                 Picasso.get().load(prop.imageUrl).into(binding.ivDetailImage)

@@ -13,9 +13,11 @@ import android.util.Log
 import android.view.View
 import android.webkit.WebView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,6 +43,12 @@ class MyPageActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private val propertyList = mutableListOf<Property>()
     private lateinit var adapter: PropertyAdapter
+
+    private lateinit var cardNoContract: CardView
+    private lateinit var cardContractStatus: View
+    private lateinit var tvContractedPropertyTitle: TextView
+    private lateinit var tvStartDate: TextView
+    private lateinit var tvEndDate: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,8 +119,15 @@ class MyPageActivity : AppCompatActivity() {
             startActivity(Intent(this, ChatListActivity::class.java))
         }
 
+        cardNoContract = findViewById(R.id.cardNoContract)
+        cardContractStatus = findViewById(R.id.cardContractStatus)
+        tvContractedPropertyTitle = findViewById(R.id.tvContractedPropertyTitle)
+        tvStartDate  = findViewById(R.id.tvStartDate)
+        tvEndDate    = findViewById(R.id.tvEndDate)
+
         applyUserTypeVisibility()
         loadMyProperties()
+        listenForAgreedContracts()
     }
 
     private fun loadUserName() {
@@ -162,6 +177,52 @@ class MyPageActivity : AppCompatActivity() {
             }
             .addOnFailureListener {
                 Toast.makeText(this, "내 매물 불러오기 실패: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun listenForAgreedContracts() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        FirebaseFirestore.getInstance()
+            .collection("Consents")
+            .whereEqualTo("sublessorId", uid)
+            .whereEqualTo("response", "agree")
+            .limit(1)
+            .addSnapshotListener { snaps, error ->
+                if (error != null) return@addSnapshotListener
+
+                if (snaps != null && !snaps.isEmpty) {
+                    val doc = snaps.documents[0]
+                    val propertyId = doc.getString("propertyId") ?: return@addSnapshotListener
+
+                    // 매물 제목 가져오기
+                    FirebaseFirestore.getInstance()
+                        .collection("Properties")
+                        .document(propertyId)
+                        .get()
+                        .addOnSuccessListener { propDoc ->
+                            val title = propDoc.getString("title") ?: "제목 없음"
+                            tvContractedPropertyTitle.text = "제목: $title"
+                            tvStartDate.text = "시작일: ${propDoc.getString("startDate")}"
+                            tvEndDate.text   = "종료일: ${propDoc.getString("endDate")}"
+                            cardContractStatus.visibility = View.VISIBLE
+                            cardNoContract.visibility = View.GONE
+                        }
+
+                    FirebaseFirestore.getInstance()
+                        .collection("Properties")
+                        .document(propertyId)
+                        .update("status", "rented")
+                        .addOnSuccessListener {
+//                            Toast.makeText(this, "매물이 계약 완료되어 숨김 처리됩니다.", Toast.LENGTH_LONG).show()
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("StatusUpdate", "status 업데이트 실패", e)
+                        }
+                } else {
+                    cardContractStatus.visibility = View.GONE
+                    cardNoContract.visibility     = View.VISIBLE
+                }
             }
     }
 
