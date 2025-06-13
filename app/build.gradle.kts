@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.androidx.ui.test.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 
     // ✅ Google Maps & Location 추가
     implementation("com.google.android.gms:play-services-maps:18.2.0")

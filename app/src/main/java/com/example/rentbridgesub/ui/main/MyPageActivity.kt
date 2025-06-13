@@ -226,6 +226,7 @@ class MyPageActivity : AppCompatActivity() {
                         .addOnSuccessListener { propDoc ->
                             val title = propDoc.getString("title") ?: "제목 없음"
                             tvContractedPropertyTitle.text = "제목: $title"
+                            tvSublessorId.text = "전대인: ${propDoc.getString("name")}"
                             tvStartDate.text = "시작일: ${propDoc.getString("startDate")}"
                             tvEndDate.text   = "종료일: ${propDoc.getString("endDate")}"
                             cardContractStatus.visibility = View.VISIBLE
@@ -233,24 +234,32 @@ class MyPageActivity : AppCompatActivity() {
                         }
 
                     FirebaseFirestore.getInstance()
-                        .collection("Users")
-                        .document(uid)
+                        .collection("Consents")
+                        .whereEqualTo("sublesseeId", uid)
                         .get()
-                        .addOnSuccessListener { propDoc ->
-                            tvSublessorId.text = "전대인: ${propDoc.getString("name")}"
+                        .addOnSuccessListener { prop ->
+                            val sublessorId = prop.documents[0].getString("sublessorId") ?: return@addOnSuccessListener
+                            FirebaseFirestore.getInstance()
+                                .collection("Users")
+                                .whereEqualTo("uid", sublessorId)
+                                .get()
+                                .addOnSuccessListener { propDoc ->
+                                    val userDoc = propDoc.documents[0]
+                                    tvSublessorId.text = "전대인: ${userDoc.getString("name")}"
 
-                            val phone = propDoc.getString("phone") ?: ""
-                            if (phone.contains("-")) {
-                                // 하이픈이 이미 있는 경우
-                                tvSublessorPhone.text = "연락처: $phone"
-                            } else {
-                                // 하이픈이 없는(숫자만) 경우
-                                val formatted = phone.replaceFirst(
-                                    Regex("""(\d{3})(\d{4})(\d{4})"""),
-                                    "$1-$2-$3"
-                                )
-                                tvSublessorPhone.text = "연락처: $formatted"
-                            }
+                                    val phone = userDoc.getString("phone") ?: ""
+                                    if (phone.contains("-")) {
+                                        // 하이픈이 이미 있는 경우
+                                        tvSublessorPhone.text = "연락처: $phone"
+                                    } else {
+                                        // 하이픈이 없는(숫자만) 경우
+                                        val formatted = phone.replaceFirst(
+                                            Regex("""(\d{3})(\d{4})(\d{4})"""),
+                                            "$1-$2-$3"
+                                        )
+                                        tvSublessorPhone.text = "연락처: $formatted"
+                                    }
+                                }
                         }
 
                     FirebaseFirestore.getInstance()
