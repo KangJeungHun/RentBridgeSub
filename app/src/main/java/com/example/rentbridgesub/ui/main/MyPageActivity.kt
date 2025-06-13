@@ -34,6 +34,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import org.w3c.dom.Text
 import java.net.URLEncoder
 import java.util.UUID
 
@@ -48,6 +49,8 @@ class MyPageActivity : AppCompatActivity() {
     private lateinit var cardNoContract: CardView
     private lateinit var cardContractStatus: View
     private lateinit var tvContractedPropertyTitle: TextView
+    private lateinit var tvSublessorId: TextView
+    private lateinit var tvSublessorPhone: TextView
     private lateinit var tvStartDate: TextView
     private lateinit var tvEndDate: TextView
 
@@ -138,6 +141,8 @@ class MyPageActivity : AppCompatActivity() {
         cardNoContract = findViewById(R.id.cardNoContract)
         cardContractStatus = findViewById(R.id.cardContractStatus)
         tvContractedPropertyTitle = findViewById(R.id.tvContractedPropertyTitle)
+        tvSublessorId = findViewById(R.id.tvSublessorId)
+        tvSublessorPhone = findViewById(R.id.tvSublessorPhone)
         tvStartDate  = findViewById(R.id.tvStartDate)
         tvEndDate    = findViewById(R.id.tvEndDate)
 
@@ -213,7 +218,7 @@ class MyPageActivity : AppCompatActivity() {
                     val doc = snaps.documents[0]
                     val propertyId = doc.getString("propertyId") ?: return@addSnapshotListener
 
-                    // 매물 제목 가져오기
+                    // 매물 정보 가져오기
                     FirebaseFirestore.getInstance()
                         .collection("Properties")
                         .document(propertyId)
@@ -225,6 +230,27 @@ class MyPageActivity : AppCompatActivity() {
                             tvEndDate.text   = "종료일: ${propDoc.getString("endDate")}"
                             cardContractStatus.visibility = View.VISIBLE
                             cardNoContract.visibility = View.GONE
+                        }
+
+                    FirebaseFirestore.getInstance()
+                        .collection("Users")
+                        .document(uid)
+                        .get()
+                        .addOnSuccessListener { propDoc ->
+                            tvSublessorId.text = "전대인: ${propDoc.getString("name")}"
+
+                            val phone = propDoc.getString("phone") ?: ""
+                            if (phone.contains("-")) {
+                                // 하이픈이 이미 있는 경우
+                                tvSublessorPhone.text = "연락처: $phone"
+                            } else {
+                                // 하이픈이 없는(숫자만) 경우
+                                val formatted = phone.replaceFirst(
+                                    Regex("""(\d{3})(\d{4})(\d{4})"""),
+                                    "$1-$2-$3"
+                                )
+                                tvSublessorPhone.text = "연락처: $formatted"
+                            }
                         }
 
                     FirebaseFirestore.getInstance()

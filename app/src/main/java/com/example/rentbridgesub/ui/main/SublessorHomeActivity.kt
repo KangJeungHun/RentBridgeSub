@@ -66,6 +66,8 @@ class SublessorHomeActivity : AppCompatActivity() {
     private lateinit var cardNoContract: CardView
     private lateinit var cardContractStatus: View
     private lateinit var tvContractedPropertyTitle: TextView
+    private lateinit var tvSublesseeId: TextView
+    private lateinit var tvSublesseePhone: TextView
     private lateinit var tvStartDate: TextView
     private lateinit var tvEndDate: TextView
 
@@ -351,6 +353,8 @@ class SublessorHomeActivity : AppCompatActivity() {
         cardNoContract = findViewById(R.id.cardNoContract)
         cardContractStatus = findViewById(R.id.cardContractStatus)
         tvContractedPropertyTitle = findViewById(R.id.tvContractedPropertyTitle)
+        tvSublesseeId = findViewById(R.id.tvSublesseeId)
+        tvSublesseePhone = findViewById(R.id.tvSublesseePhone)
         tvStartDate  = findViewById(R.id.tvStartDate)
         tvEndDate    = findViewById(R.id.tvEndDate)
 
@@ -431,7 +435,7 @@ class SublessorHomeActivity : AppCompatActivity() {
                     val doc = snaps.documents[0]
                     val propertyId = doc.getString("propertyId") ?: return@addSnapshotListener
 
-                    // 매물 제목 가져오기
+                    // 매물 정보 가져오기
                     FirebaseFirestore.getInstance()
                         .collection("Properties")
                         .document(propertyId)
@@ -443,6 +447,35 @@ class SublessorHomeActivity : AppCompatActivity() {
                             tvEndDate.text   = "종료일: ${propDoc.getString("endDate")}"
                             cardContractStatus.visibility = View.VISIBLE
                             cardNoContract.visibility = View.GONE
+                        }
+
+                    FirebaseFirestore.getInstance()
+                        .collection("Consents")
+                        .whereEqualTo("sublessorId", uid)
+                        .get()
+                        .addOnSuccessListener { prop ->
+                            val sublesseeId = prop.documents[0].getString("sublesseeId") ?: return@addOnSuccessListener
+                            FirebaseFirestore.getInstance()
+                                .collection("Users")
+                                .whereEqualTo("uid", sublesseeId)
+                                .get()
+                                .addOnSuccessListener { propDoc ->
+                                    val userDoc = propDoc.documents[0]
+                                    tvSublesseeId.text = "전차인: ${userDoc.getString("name")}"
+
+                                    val phone = userDoc.getString("phone") ?: ""
+                                    if (phone.contains("-")) {
+                                        // 하이픈이 이미 있는 경우
+                                        tvSublesseePhone.text = "연락처: $phone"
+                                    } else {
+                                        // 하이픈이 없는(숫자만) 경우
+                                        val formatted = phone.replaceFirst(
+                                            Regex("""(\d{3})(\d{4})(\d{4})"""),
+                                            "$1-$2-$3"
+                                        )
+                                        tvSublesseePhone.text = "연락처: $formatted"
+                                    }
+                                }
                         }
 
                     FirebaseFirestore.getInstance()
