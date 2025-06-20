@@ -10,7 +10,7 @@ RentBridgeSub는 전대인(Sublessor)과 전차인(Sublessee) 간의 전대차 �
 * **계약서 업로드 & 검토 요청**: 전대인이 계약서 파일(PDF)을 업로드하여 전차인 및 임대인에게 검토·동의 요청을 전송합니다.
 * **SMS 링크 전송**: Firebase Cloud Functions를 활용해 임대인에게 SMS로 계약 동의 링크를 자동 전송합니다.
 * **계약 동의 현황 확인**: 임대인이 링크에서 동의/거부하면 앱 내에 실시간으로 계약 상태가 업데이트됩니다.
-* **학생 인증**: 대학 이메일 인증을 통해 사용자가 학생임을 증명할 수 있는 기능을 제공하며, 인증된 학생에게는 🎓 뱃지를 표시합니다.
+* **학생 인증**: 대학 이메일 인증을 통해 사용자가 학생임을 증명할 수 있는 기능을 제공하며, 인증된 학생에게는 뱃지를 표시합니다.
 
 ## 아키텍처
 
@@ -36,7 +36,6 @@ RentBridgeSub는 전대인(Sublessor)과 전차인(Sublessee) 간의 전대차 �
    ./gradlew assembleDebug
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
-6. 앱을 실행하고, 회원가입 후 기능을 테스트하세요.
 
 ## 환경 설정
 
@@ -49,18 +48,3 @@ RentBridgeSub는 전대인(Sublessor)과 전차인(Sublessee) 간의 전대차 �
   npm install
   firebase deploy --only functions
   ```
-
-## 디렉토리 구조
-
-```
-/app
-  ├─ src/main/java/com/example/rentbridgesub  # 앱 코드
-  ├─ src/main/res                            # 레이아웃, 그림자원
-  └─ google-services.json                    # Firebase 설정
-/functions                                    # Cloud Functions 코드
-/README.md                                    # 프로젝트 설명
-```
-
-## 라이센스
-
-MIT License © 2025 RentBridgeSub Contributors
